@@ -18,9 +18,7 @@ contract LiquidSplit is ERC1155 {
     /// Array lengths of accounts & percentAllocations don't match (`accountsLength` != `allocationsLength`)
     /// @param accountsLength Length of accounts array
     /// @param allocationsLength Length of percentAllocations array
-    error InvalidLiquidSplit__AccountsAndAllocationsMismatch(
-        uint256 accountsLength, uint256 allocationsLength
-    );
+    error InvalidLiquidSplit__AccountsAndAllocationsMismatch(uint256 accountsLength, uint256 allocationsLength);
 
     /// Invalid initAllocations sum `allocationsSum` must equal `TOTAL_SUPPLY`
     /// @param allocationsSum Sum of percentAllocations array
@@ -40,7 +38,10 @@ contract LiquidSplit is ERC1155 {
     /// events
     /// -----------------------------------------------------------------------
 
-    // TODO
+    /// Emitted after each successful ETH transfer to proxy
+    /// @param amount Amount of ETH received
+    /// @dev embedded in & emitted from clone bytecode
+    event ReceiveETH(uint256 amount);
 
     /// -----------------------------------------------------------------------
     /// storage
@@ -72,9 +73,7 @@ contract LiquidSplit is ERC1155 {
         /// checks
 
         if (accounts.length != initAllocations.length) {
-            revert InvalidLiquidSplit__AccountsAndAllocationsMismatch(
-                accounts.length, initAllocations.length
-            );
+            revert InvalidLiquidSplit__AccountsAndAllocationsMismatch(accounts.length, initAllocations.length);
         }
 
         {
@@ -103,8 +102,7 @@ contract LiquidSplit is ERC1155 {
         uint32[] memory initPercentAllocations = new uint32[](2);
         initPercentAllocations[0] = uint32(500000);
         initPercentAllocations[1] = uint32(500000);
-        payoutSplit =
-            payable(splitMain.createSplit(recipients, initPercentAllocations, 0, address(this)));
+        payoutSplit = payable(splitMain.createSplit(recipients, initPercentAllocations, 0, address(this)));
 
         // mint NFTs to initial holders
         uint256 numAccs = accounts.length;
@@ -123,13 +121,17 @@ contract LiquidSplit is ERC1155 {
     /// functions - public & external
     /// -----------------------------------------------------------------------
 
+    /// emit event when receiving ETH
+    /// @dev implemented w/i clone bytecode
+    receive() external payable {
+        emit ReceiveETH(msg.value);
+    }
+
     /// distributes ETH & ERC20s to NFT holders
     /// @param token ETH (0x0) or ERC20 token to distribute
     /// @param accounts Ordered, unique list of NFT holders
     /// @param distributorAddress Address to receive distributorFee
-    function distributeFunds(address token, address[] calldata accounts, address distributorAddress)
-        external
-    {
+    function distributeFunds(address token, address[] calldata accounts, address distributorAddress) external {
         uint256 numRecipients = accounts.length;
         uint32[] memory percentAllocations = new uint32[](numRecipients);
         unchecked {
@@ -147,12 +149,7 @@ contract LiquidSplit is ERC1155 {
         } else {
             token.safeTransfer(payoutSplit, ERC20(token).balanceOf(address(this)));
             splitMain.updateAndDistributeERC20(
-                payoutSplit,
-                ERC20(token),
-                accounts,
-                percentAllocations,
-                distributorFee,
-                distributorAddress
+                payoutSplit, ERC20(token), accounts, percentAllocations, distributorFee, distributorAddress
             );
         }
     }
