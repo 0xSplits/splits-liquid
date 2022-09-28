@@ -8,7 +8,8 @@ import {ISplitMain} from "src/interfaces/ISplitMain.sol";
 
 /// @title LiquidSplit
 /// @author 0xSplits
-/// @notice TODO
+/// @notice A minimal liquid splits implementation (ownership in a split is represented by 1155s).
+/// Each 1155 = 0.1% of the split.
 /// @dev This contract uses token = address(0) to refer to ETH.
 contract LiquidSplit is ERC1155 {
     /// -----------------------------------------------------------------------
@@ -194,7 +195,7 @@ contract LiquidSplit is ERC1155 {
 
     /// Sums array of uint32s
     /// @param numbers Array of uint32s to sum
-    /// @return sum Sum of `numbers`.
+    /// @return sum Sum of `numbers`
     function _getSum(uint32[] memory numbers) internal pure returns (uint32 sum) {
         uint256 numbersLength = numbers.length;
         for (uint256 i; i < numbersLength;) {
