@@ -251,6 +251,27 @@ contract LiquidSplitTest is Test {
         }
     }
 
+    function testCan_payDistributorFee() public {
+        distributorFee = uint32(PERCENTAGE_SCALE / 10); // = 10%
+
+        ls =
+        new LiquidSplit{salt: keccak256(bytes("0xSplits.liquid.test"))}({ _splitMain: splitMain, accounts: accounts, initAllocations: initAllocations, _distributorFee: distributorFee });
+
+        address[] memory _accounts = accounts;
+        _accounts.sort();
+        _accounts.uniquifySorted();
+
+        address(ls).safeTransferETH(10 ether);
+        vm.expectCall(address(splitMain), abi.encodeWithSelector(splitMain.updateAndDistributeETH.selector));
+        ls.distributeFunds(ETH_ADDRESS, _accounts, address(this));
+        assertEq(splitMain.getETHBalance(address(this)), 1 ether);
+
+        address(mERC20).safeTransfer(address(ls), 10 ether);
+        vm.expectCall(address(splitMain), abi.encodeWithSelector(splitMain.updateAndDistributeERC20.selector));
+        ls.distributeFunds(address(mERC20), _accounts, address(this));
+        assertEq(splitMain.getERC20Balance(address(this), mERC20), uint256(1 ether) - 1);
+    }
+
     /// -----------------------------------------------------------------------
     /// correctness tests - fuzzing
     /// -----------------------------------------------------------------------
