@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity 0.8.17;
+pragma solidity ^0.8.17;
 
-import {ISplitMain} from "splits-contracts/interfaces/ISplitMain.sol";
 import {ERC1155} from "solmate/tokens/ERC1155.sol";
 import {ERC20} from "solmate/tokens/ERC20.sol";
 import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
+import {ISplitMain} from "src/interfaces/ISplitMain.sol";
 
 /// @title LiquidSplit
 /// @author 0xSplits
@@ -55,7 +55,7 @@ contract LiquidSplit is ERC1155 {
     uint256 public constant SUPPLY_TO_PERCENTAGE = 1e3; // = PERCENTAGE_SCALE / TOTAL_SUPPLY;
 
     ISplitMain public immutable splitMain;
-    uint256 public immutable distributorFee;
+    uint32 public immutable distributorFee;
     address public immutable payoutSplit;
 
     /// -----------------------------------------------------------------------
@@ -66,8 +66,8 @@ contract LiquidSplit is ERC1155 {
 
     constructor(
         ISplitMain _splitMain,
-        address[] calldata accounts,
-        uint32[] calldata initAllocations,
+        address[] memory accounts,
+        uint32[] memory initAllocations,
         uint32 _distributorFee
     ) {
         /// checks
@@ -84,7 +84,7 @@ contract LiquidSplit is ERC1155 {
         }
 
         if (_distributorFee > MAX_DISTRIBUTOR_FEE) {
-            revert InvalidLiquidSplit__InvalidDistributorFee(distributorFee);
+            revert InvalidLiquidSplit__InvalidDistributorFee(_distributorFee);
         }
 
         /// effects
@@ -102,13 +102,20 @@ contract LiquidSplit is ERC1155 {
         uint32[] memory initPercentAllocations = new uint32[](2);
         initPercentAllocations[0] = uint32(500000);
         initPercentAllocations[1] = uint32(500000);
-        payoutSplit = payable(splitMain.createSplit(recipients, initPercentAllocations, 0, address(this)));
+        payoutSplit = payable(
+            splitMain.createSplit({
+                accounts: recipients,
+                percentAllocations: initPercentAllocations,
+                distributorFee: 0,
+                controller: address(this)
+            })
+        );
 
         // mint NFTs to initial holders
         uint256 numAccs = accounts.length;
         unchecked {
             for (uint256 i; i < numAccs; ++i) {
-                _mint(accounts[i], TOKEN_ID, initAllocations[i], "");
+                _mint({to: accounts[i], id: TOKEN_ID, amount: initAllocations[i], data: ""});
             }
         }
     }
@@ -136,32 +143,61 @@ contract LiquidSplit is ERC1155 {
         uint32[] memory percentAllocations = new uint32[](numRecipients);
         unchecked {
             for (uint256 i; i < numRecipients; ++i) {
-                percentAllocations[i] = balanceOf[accounts[i]][TOKEN_ID] * SUPPLY_TO_PERCENTAGE;
+                // can't overflow; invariant:
+                // sum(balanceOf) == TOTAL_SUPPLY = 1e3
+                // SUPPLY_TO_PERCENTAGE = 1e6 / 1e3 = 1e3
+                // =>
+                // sum(balanceOf[i] * SUPPLY_TO_PERCENTAGE) == PERCENTAGE_SCALE = 1e6)
+                percentAllocations[i] = uint32(balanceOf[accounts[i]][TOKEN_ID] * SUPPLY_TO_PERCENTAGE);
             }
         }
 
         // atomically deposit funds, update recipients to reflect current NFT holders, and distribute
         if (token == ETH_ADDRESS) {
             payoutSplit.safeTransferETH(address(this).balance);
-            splitMain.updateAndDistributeETH(
-                payoutSplit, accounts, percentAllocations, distributorFee, distributorAddress
-            );
+            splitMain.updateAndDistributeETH({
+                split: payoutSplit,
+                accounts: accounts,
+                percentAllocations: percentAllocations,
+                distributorFee: distributorFee,
+                distributorAddress: distributorAddress
+            });
         } else {
             token.safeTransfer(payoutSplit, ERC20(token).balanceOf(address(this)));
-            splitMain.updateAndDistributeERC20(
-                payoutSplit, ERC20(token), accounts, percentAllocations, distributorFee, distributorAddress
-            );
+            splitMain.updateAndDistributeERC20({
+                split: payoutSplit,
+                token: ERC20(token),
+                accounts: accounts,
+                percentAllocations: percentAllocations,
+                distributorFee: distributorFee,
+                distributorAddress: distributorAddress
+            });
         }
+    }
+
+    /// -----------------------------------------------------------------------
+    /// functions - public & external - view & pure
+    /// -----------------------------------------------------------------------
+
+    // TODO
+
+    /* function uri(uint256 id) public view override returns (string memory) { */
+    function uri(uint256) public pure override returns (string memory) {
+        return "uri";
     }
 
     /// -----------------------------------------------------------------------
     /// functions - private & internal
     /// -----------------------------------------------------------------------
 
+    /// -----------------------------------------------------------------------
+    /// functions - private & internal - pure
+    /// -----------------------------------------------------------------------
+
     /// Sums array of uint32s
     /// @param numbers Array of uint32s to sum
     /// @return sum Sum of `numbers`.
-    function _getSum(uint32[] calldata numbers) internal pure returns (uint32 sum) {
+    function _getSum(uint32[] memory numbers) internal pure returns (uint32 sum) {
         uint256 numbersLength = numbers.length;
         for (uint256 i; i < numbersLength;) {
             sum += numbers[i];
