@@ -18,6 +18,7 @@ contract LiquidSplitTest is Test {
     event ReceiveETH(uint256 amount);
 
     uint256 constant BLOCK_NUMBER = 15619912;
+    uint256 constant GAS_BLOCK_LIMIT = 30_000_000;
 
     uint256 constant PERCENTAGE_SCALE = 1e6;
     uint256 constant TOTAL_SUPPLY = 1e3;
@@ -223,6 +224,37 @@ contract LiquidSplitTest is Test {
 
         address(mERC20).safeTransfer(address(ls), 4 ether);
         ls.distributeFunds(address(mERC20), _accounts, address(this));
+        for (uint256 i = 0; i < _accounts.length; i++) {
+            assertEq(splitMain.getERC20Balance(_accounts[i], mERC20), uint256(1 ether) - 1);
+        }
+    }
+
+    function testCan_distributeToMaxUniqueHolders() public {
+        accounts = new address[](TOTAL_SUPPLY);
+        initAllocations = new uint32[](TOTAL_SUPPLY);
+        for (uint256 i = 0; i < accounts.length; i++) {
+            accounts[i] = address(uint160(type(uint256).max - TOTAL_SUPPLY + i));
+            initAllocations[i] = uint32(1);
+        }
+
+        address[] memory _accounts = accounts;
+        uint32[] memory _initAllocations = initAllocations;
+
+        ls =
+        new LiquidSplit{salt: keccak256(bytes("0xSplits.liquid.test"))}({ _splitMain: splitMain, accounts: _accounts, initAllocations: _initAllocations, _distributorFee: distributorFee });
+
+        address(ls).safeTransferETH(TOTAL_SUPPLY * 1 ether);
+        uint256 gasStart = gasleft();
+        ls.distributeFunds(ETH_ADDRESS, _accounts, address(this));
+        assert(gasStart - gasleft() < GAS_BLOCK_LIMIT);
+        for (uint256 i = 0; i < _accounts.length; i++) {
+            assertEq(splitMain.getETHBalance(_accounts[i]), 1 ether);
+        }
+
+        address(mERC20).safeTransfer(address(ls), TOTAL_SUPPLY * 1 ether);
+        gasStart = gasleft();
+        ls.distributeFunds(address(mERC20), _accounts, address(this));
+        assert(gasStart - gasleft() < GAS_BLOCK_LIMIT);
         for (uint256 i = 0; i < _accounts.length; i++) {
             assertEq(splitMain.getERC20Balance(_accounts[i], mERC20), uint256(1 ether) - 1);
         }
