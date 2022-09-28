@@ -182,20 +182,11 @@ contract LiquidSplitTest is Test {
     }
 
     function testCannot_distributeToSingleHolder() public {
-        accounts = new address[](1);
-        accounts[0] = makeAddr("0xSplits.alice");
+        vm.prank(accounts[1]);
+        ls.safeTransferFrom(accounts[1], accounts[0], TOKEN_ID, 500, "");
 
-        initAllocations = new uint32[](1);
-        initAllocations[0] = uint32(TOTAL_SUPPLY);
-
-        distributorFee = 0;
-
-        ls =
-        new LiquidSplit{salt: keccak256(bytes("0xSplits.liquid.test"))}({ _splitMain: splitMain, accounts: accounts, initAllocations: initAllocations, _distributorFee: distributorFee });
-
-        address[] memory _accounts = accounts;
-        _accounts.sort();
-        _accounts.uniquifySorted();
+        address[] memory _accounts = new address[](1);
+        _accounts[0] = accounts[0];
 
         address(ls).safeTransferETH(1 ether);
         vm.expectRevert(abi.encodeWithSelector(ISplitMain.InvalidSplit__TooFewAccounts.selector, 1));
