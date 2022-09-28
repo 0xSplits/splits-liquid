@@ -62,8 +62,6 @@ contract LiquidSplit is ERC1155 {
     /// constructor
     /// -----------------------------------------------------------------------
 
-    // TODO: gas check vs manual uint32 check
-
     constructor(
         ISplitMain _splitMain,
         address[] memory accounts,
