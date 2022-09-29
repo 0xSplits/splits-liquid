@@ -39,11 +39,8 @@ abstract contract LiquidSplit {
     /// -----------------------------------------------------------------------
 
     address internal constant ETH_ADDRESS = address(0);
-    /* uint256 internal constant TOKEN_ID = 0; */
     uint256 public constant PERCENTAGE_SCALE = 1e6;
     uint256 public constant MAX_DISTRIBUTOR_FEE = 1e5; // = 10% * PERCENTAGE_SCALE
-    /* uint256 public constant TOTAL_SUPPLY = 1e3; */
-    /* uint256 public constant SUPPLY_TO_PERCENTAGE = 1e3; // = PERCENTAGE_SCALE / TOTAL_SUPPLY; */
 
     ISplitMain public immutable splitMain;
     uint32 public immutable distributorFee;
@@ -143,12 +140,5 @@ abstract contract LiquidSplit {
     /// functions - public & external - view & pure
     /// -----------------------------------------------------------------------
 
-    function percentBalanceOf(address account) public view virtual returns (uint32) {
-        // can't overflow; invariant:
-        // sum(balanceOf) == TOTAL_SUPPLY = 1e3
-        // SUPPLY_TO_PERCENTAGE = 1e6 / 1e3 = 1e3
-        // =>
-        // sum(balanceOf[i] * SUPPLY_TO_PERCENTAGE) == PERCENTAGE_SCALE = 1e6)
-        /* return uint32(balanceOf[accounts[i]][TOKEN_ID] * SUPPLY_TO_PERCENTAGE); */
-    }
+    function percentBalanceOf(address account) public view virtual returns (uint32) {}
 }
