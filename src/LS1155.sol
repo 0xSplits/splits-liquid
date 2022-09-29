@@ -32,7 +32,7 @@ contract LS1155 is ERC1155, LiquidSplit {
 
     uint256 internal constant TOKEN_ID = 0;
     uint256 public constant TOTAL_SUPPLY = 1e3;
-    uint256 public constant SUPPLY_TO_PERCENTAGE = PERCENTAGE_SCALE / TOTAL_SUPPLY;
+    uint256 public constant SUPPLY_TO_PERCENTAGE = 1e3; // = PERCENTAGE_SCALE / TOTAL_SUPPLY
 
     /// -----------------------------------------------------------------------
     /// constructor
@@ -44,6 +44,7 @@ contract LS1155 is ERC1155, LiquidSplit {
         uint32[] memory initAllocations,
         uint32 _distributorFee
                 ) LiquidSplit(_splitMain, _distributorFee) {
+
         /// checks
 
         if (accounts.length != initAllocations.length) {
@@ -81,15 +82,18 @@ contract LS1155 is ERC1155, LiquidSplit {
     /// -----------------------------------------------------------------------
 
     function percentBalanceOf(address account) public view override returns (uint32) {
-        // can't overflow; invariant:
-        // sum(balanceOf) == TOTAL_SUPPLY = 1e3
-        // SUPPLY_TO_PERCENTAGE = 1e6 / 1e3 = 1e3
-        // =>
-        // sum(balanceOf[i] * SUPPLY_TO_PERCENTAGE) == PERCENTAGE_SCALE = 1e6)
-        return uint32(balanceOf[account][TOKEN_ID] * SUPPLY_TO_PERCENTAGE);
+        unchecked{
+            // can't overflow; invariant:
+            // sum(balanceOf) == TOTAL_SUPPLY = 1e3
+            // SUPPLY_TO_PERCENTAGE = 1e6 / 1e3 = 1e3
+            // =>
+            // sum(balanceOf[i] * SUPPLY_TO_PERCENTAGE) == PERCENTAGE_SCALE = 1e6)
+            return uint32(balanceOf[account][TOKEN_ID] * SUPPLY_TO_PERCENTAGE);
+        }
     }
 
     // TODO
+
     /* function uri(uint256 id) public view override returns (string memory) { */
     function uri(uint256) public pure override returns (string memory) {
         return "uri";
