@@ -81,7 +81,7 @@ contract LS1155 is ERC1155, LiquidSplit {
     /// functions - public & external - view & pure
     /// -----------------------------------------------------------------------
 
-    function percentBalanceOf(address account) public view override returns (uint32) {
+    function scaledPercentBalanceOf(address account) internal view override returns (uint32) {
         unchecked{
             // can't overflow; invariant:
             // sum(balanceOf) == TOTAL_SUPPLY = 1e3

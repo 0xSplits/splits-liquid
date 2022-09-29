@@ -107,7 +107,7 @@ abstract contract LiquidSplit {
         uint256 numRecipients = accounts.length;
         uint32[] memory percentAllocations = new uint32[](numRecipients);
             for (uint256 i; i < numRecipients; ) {
-                percentAllocations[i] = percentBalanceOf(accounts[i]);
+                percentAllocations[i] = scaledPercentBalanceOf(accounts[i]);
                 unchecked {
                     ++i;
             }
@@ -140,5 +140,5 @@ abstract contract LiquidSplit {
     /// functions - public & external - view & pure
     /// -----------------------------------------------------------------------
 
-    function percentBalanceOf(address account) public view virtual returns (uint32) {}
+    function scaledPercentBalanceOf(address account) internal view virtual returns (uint32) {}
 }
