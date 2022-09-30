@@ -51,7 +51,7 @@ abstract contract LiquidSplit {
     /// -----------------------------------------------------------------------
 
     constructor(
-        ISplitMain _splitMain,
+        address _splitMain,
         uint32 _distributorFee
     ) {
         /// checks
@@ -62,7 +62,7 @@ abstract contract LiquidSplit {
 
         /// effects
 
-        splitMain = _splitMain; /*Establish interface to splits contract*/
+        splitMain = ISplitMain( _splitMain ); /*Establish interface to splits contract*/
         distributorFee = _distributorFee;
 
         /// interactions

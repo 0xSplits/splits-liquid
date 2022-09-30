@@ -3,9 +3,6 @@ pragma solidity ^0.8.17;
 
 import {LiquidSplit} from "src/LiquidSplit.sol";
 import {ERC1155} from "solmate/tokens/ERC1155.sol";
-import {ERC20} from "solmate/tokens/ERC20.sol";
-import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
-import {ISplitMain} from "src/interfaces/ISplitMain.sol";
 
 /// @title 1155LiquidSplit
 /// @author 0xSplits
@@ -39,7 +36,7 @@ contract LS1155 is ERC1155, LiquidSplit {
     /// -----------------------------------------------------------------------
 
     constructor(
-        ISplitMain _splitMain,
+        address _splitMain,
         address[] memory accounts,
         uint32[] memory initAllocations,
         uint32 _distributorFee

@@ -51,7 +51,7 @@ contract LiquidSplitTest is Test {
         distributorFee = 0;
 
         ls =
-        new LiquidSplit{salt: keccak256(bytes("0xSplits.liquid.test"))}({ _splitMain: splitMain, accounts: accounts, initAllocations: initAllocations, _distributorFee: distributorFee });
+        new LiquidSplit{salt: keccak256(bytes("0xSplits.liquid.test"))}({ _splitMain: address(splitMain), accounts: accounts, initAllocations: initAllocations, _distributorFee: distributorFee });
     }
 
     /// -----------------------------------------------------------------------
@@ -64,7 +64,7 @@ contract LiquidSplitTest is Test {
         accounts[0] = address(new ERC1155Recipient());
         accounts[1] = makeAddr("0xSplits.bob");
 
-        new LiquidSplit({ _splitMain: splitMain, accounts: accounts, initAllocations: initAllocations, _distributorFee: distributorFee });
+        new LiquidSplit({ _splitMain: address(splitMain), accounts: accounts, initAllocations: initAllocations, _distributorFee: distributorFee });
     }
 
     function testCannot_allocateToZeroAddress() public {
@@ -72,13 +72,13 @@ contract LiquidSplitTest is Test {
         accounts[0] = address(0);
 
         vm.expectRevert("UNSAFE_RECIPIENT");
-        new LiquidSplit({ _splitMain: splitMain, accounts: accounts, initAllocations: initAllocations, _distributorFee: distributorFee });
+        new LiquidSplit({ _splitMain: address(splitMain), accounts: accounts, initAllocations: initAllocations, _distributorFee: distributorFee });
 
         accounts[0] = account;
         accounts[1] = address(0);
 
         vm.expectRevert("UNSAFE_RECIPIENT");
-        new LiquidSplit({ _splitMain: splitMain, accounts: accounts, initAllocations: initAllocations, _distributorFee: distributorFee });
+        new LiquidSplit({ _splitMain: address(splitMain), accounts: accounts, initAllocations: initAllocations, _distributorFee: distributorFee });
     }
 
     function testCannot_allocateToNon721Recipient() public {
@@ -86,13 +86,13 @@ contract LiquidSplitTest is Test {
         accounts[0] = address(new NonERC1155Recipient());
 
         vm.expectRevert();
-        new LiquidSplit({ _splitMain: splitMain, accounts: accounts, initAllocations: initAllocations, _distributorFee: distributorFee });
+        new LiquidSplit({ _splitMain: address(splitMain), accounts: accounts, initAllocations: initAllocations, _distributorFee: distributorFee });
 
         accounts[0] = account;
         accounts[1] = address(new NonERC1155Recipient());
 
         vm.expectRevert();
-        new LiquidSplit({ _splitMain: splitMain, accounts: accounts, initAllocations: initAllocations, _distributorFee: distributorFee });
+        new LiquidSplit({ _splitMain: address(splitMain), accounts: accounts, initAllocations: initAllocations, _distributorFee: distributorFee });
     }
 
     function testCannot_allocateToUnsafe721Recipient() public {
@@ -100,13 +100,13 @@ contract LiquidSplitTest is Test {
         accounts[0] = address(new WrongReturnDataERC1155Recipient());
 
         vm.expectRevert("UNSAFE_RECIPIENT");
-        new LiquidSplit({ _splitMain: splitMain, accounts: accounts, initAllocations: initAllocations, _distributorFee: distributorFee });
+        new LiquidSplit({ _splitMain: address(splitMain), accounts: accounts, initAllocations: initAllocations, _distributorFee: distributorFee });
 
         accounts[0] = account;
         accounts[1] = address(new WrongReturnDataERC1155Recipient());
 
         vm.expectRevert("UNSAFE_RECIPIENT");
-        new LiquidSplit({ _splitMain: splitMain, accounts: accounts, initAllocations: initAllocations, _distributorFee: distributorFee });
+        new LiquidSplit({ _splitMain: address(splitMain), accounts: accounts, initAllocations: initAllocations, _distributorFee: distributorFee });
     }
 
     function testCannot_allocateToReverting721Recipient() public {
@@ -114,13 +114,13 @@ contract LiquidSplitTest is Test {
         accounts[0] = address(new RevertingERC1155Recipient());
 
         vm.expectRevert(abi.encodeWithSelector(ERC1155TokenReceiver.onERC1155Received.selector));
-        new LiquidSplit({ _splitMain: splitMain, accounts: accounts, initAllocations: initAllocations, _distributorFee: distributorFee });
+        new LiquidSplit({ _splitMain: address(splitMain), accounts: accounts, initAllocations: initAllocations, _distributorFee: distributorFee });
 
         accounts[0] = account;
         accounts[1] = address(new RevertingERC1155Recipient());
 
         vm.expectRevert(abi.encodeWithSelector(ERC1155TokenReceiver.onERC1155Received.selector));
-        new LiquidSplit({ _splitMain: splitMain, accounts: accounts, initAllocations: initAllocations, _distributorFee: distributorFee });
+        new LiquidSplit({ _splitMain: address(splitMain), accounts: accounts, initAllocations: initAllocations, _distributorFee: distributorFee });
     }
 
     /// -----------------------------------------------------------------------
@@ -232,7 +232,7 @@ contract LiquidSplitTest is Test {
         uint32[] memory _initAllocations = initAllocations;
 
         ls =
-        new LiquidSplit{salt: keccak256(bytes("0xSplits.liquid.test"))}({ _splitMain: splitMain, accounts: _accounts, initAllocations: _initAllocations, _distributorFee: distributorFee });
+        new LiquidSplit{salt: keccak256(bytes("0xSplits.liquid.test"))}({ _splitMain: address(splitMain), accounts: _accounts, initAllocations: _initAllocations, _distributorFee: distributorFee });
 
         address(ls).safeTransferETH(TOTAL_SUPPLY * 1 ether);
         uint256 gasStart = gasleft();
@@ -255,7 +255,7 @@ contract LiquidSplitTest is Test {
         distributorFee = uint32(PERCENTAGE_SCALE / 10); // = 10%
 
         ls =
-        new LiquidSplit{salt: keccak256(bytes("0xSplits.liquid.test"))}({ _splitMain: splitMain, accounts: accounts, initAllocations: initAllocations, _distributorFee: distributorFee });
+        new LiquidSplit{salt: keccak256(bytes("0xSplits.liquid.test"))}({ _splitMain: address(splitMain), accounts: accounts, initAllocations: initAllocations, _distributorFee: distributorFee });
 
         address[] memory _accounts = accounts;
         _accounts.sort();
