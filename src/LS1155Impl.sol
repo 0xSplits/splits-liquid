@@ -1,15 +1,16 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.17;
 
-import {LiquidSplit} from "src/LiquidSplit.sol";
 import {ERC1155} from "solmate/tokens/ERC1155.sol";
+import {Clone} from "solady/utils/Clone.sol";
+import {LiquidSplitImpl} from "src/LiquidSplitImpl.sol";
 
 /// @title 1155LiquidSplit
 /// @author 0xSplits
 /// @notice A minimal liquid splits implementation (ownership in a split is represented by 1155s).
 /// Each 1155 = 0.1% of the split.
 /// @dev This contract uses token = address(0) to refer to ETH.
-contract LS1155 is ERC1155, LiquidSplit {
+contract LS1155Impl is ERC1155, Clone, LiquidSplitImpl {
     /// -----------------------------------------------------------------------
     /// errors
     /// -----------------------------------------------------------------------
@@ -32,11 +33,18 @@ contract LS1155 is ERC1155, LiquidSplit {
     uint256 public constant SUPPLY_TO_PERCENTAGE = 1e3; // = PERCENTAGE_SCALE / TOTAL_SUPPLY
 
     /// -----------------------------------------------------------------------
-    /// constructor
+    /// constructor & initializer
     /// -----------------------------------------------------------------------
 
-    constructor(address _splitMain, address[] memory accounts, uint32[] memory initAllocations, uint32 _distributorFee)
-        LiquidSplit(_splitMain, _distributorFee)
+    // solhint-disable-next-line no-empty-blocks
+    constructor(address _splitMain) LiquidSplitImpl(_splitMain) {}
+
+    // TODO: check if initialized
+    // or only allow msg.sender to be factory
+    // TODO: use cwia for dist fee
+
+    function initializer(address[] calldata accounts, uint32[] calldata initAllocations, uint32 _distributorFee)
+        external
     {
         /// checks
 
@@ -52,6 +60,8 @@ contract LS1155 is ERC1155, LiquidSplit {
         }
 
         /// interactions
+
+        LiquidSplitImpl.initializer(_distributorFee);
 
         // mint NFTs to initial holders
         uint256 numAccs = accounts.length;
@@ -103,7 +113,7 @@ contract LS1155 is ERC1155, LiquidSplit {
     /// Sums array of uint32s
     /// @param numbers Array of uint32s to sum
     /// @return sum Sum of `numbers`
-    function _getSum(uint32[] memory numbers) internal pure returns (uint32 sum) {
+    function _getSum(uint32[] calldata numbers) internal pure returns (uint32 sum) {
         uint256 numbersLength = numbers.length;
         for (uint256 i; i < numbersLength;) {
             sum += numbers[i];

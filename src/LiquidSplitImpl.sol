@@ -5,12 +5,14 @@ import {ERC20} from "solmate/tokens/ERC20.sol";
 import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
 import {ISplitMain} from "src/interfaces/ISplitMain.sol";
 
+// TODO review natspec lang
+
 /// @title LiquidSplit
 /// @author 0xSplits
 /// @notice An abstract liquid split base (ownership in a split is represented by 1155s).
 /// Each 1155 = 0.1% of the split.
 /// @dev This contract uses token = address(0) to refer to ETH.
-abstract contract LiquidSplit {
+abstract contract LiquidSplitImpl {
     /// -----------------------------------------------------------------------
     /// errors
     /// -----------------------------------------------------------------------
@@ -43,14 +45,20 @@ abstract contract LiquidSplit {
     uint256 public constant MAX_DISTRIBUTOR_FEE = 1e5; // = 10% * PERCENTAGE_SCALE
 
     ISplitMain public immutable splitMain;
-    uint32 public immutable distributorFee;
-    address public immutable payoutSplit;
+    /* uint32 public immutable distributorFee; */
+    /* address public immutable payoutSplit; */
+    uint32 public distributorFee;
+    address public payoutSplit;
 
     /// -----------------------------------------------------------------------
-    /// constructor
+    /// constructor & initializer
     /// -----------------------------------------------------------------------
 
-    constructor(address _splitMain, uint32 _distributorFee) {
+    constructor(address _splitMain) {
+        splitMain = ISplitMain(_splitMain); /*Establish interface to splits contract*/
+    }
+
+    function initializer(uint32 _distributorFee) internal {
         /// checks
 
         if (_distributorFee > MAX_DISTRIBUTOR_FEE) {
@@ -59,7 +67,6 @@ abstract contract LiquidSplit {
 
         /// effects
 
-        splitMain = ISplitMain(_splitMain); /*Establish interface to splits contract*/
         distributorFee = _distributorFee;
 
         /// interactions
@@ -91,9 +98,10 @@ abstract contract LiquidSplit {
     /// -----------------------------------------------------------------------
 
     /// emit event when receiving ETH
-    receive() external payable virtual {
-        emit ReceiveETH(msg.value);
-    }
+    /// @dev implemented w/i clone bytecode
+    /* receive() external virtual payable { */
+    /*     emit ReceiveETH(msg.value); */
+    /* } */
 
     /// distributes ETH & ERC20s to NFT holders
     /// @param token ETH (0x0) or ERC20 token to distribute

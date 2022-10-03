@@ -9,9 +9,10 @@ import {LibSort} from "solady/utils/LibSort.sol";
 import {ISplitMain} from "src/interfaces/ISplitMain.sol";
 import {MockERC20} from "./mocks/MockERC20.sol";
 
-import {LS1155} from "src/LS1155.sol";
+import {LiquidSplitFactory} from "src/LiquidSplitFactory.sol";
+import {LS1155Impl} from "src/LS1155Impl.sol";
 
-contract LS1155Test is Test {
+contract LS1155ImplTest is Test {
     using SafeTransferLib for address;
     using LibSort for address[];
 
@@ -27,7 +28,8 @@ contract LS1155Test is Test {
 
     ISplitMain public splitMain = ISplitMain(0x2ed6c4B5dA6378c7897AC67Ba9e43102Feb694EE);
     MockERC20 public mERC20;
-    LS1155 public ls;
+    LiquidSplitFactory public lsf;
+    LS1155Impl public ls;
 
     address[] public accounts;
     uint32[] public initAllocations;
@@ -50,8 +52,12 @@ contract LS1155Test is Test {
 
         distributorFee = 0;
 
-        ls =
-        new LS1155{salt: keccak256(bytes("0xSplits.liquid.test"))}({ _splitMain: address(splitMain), accounts: accounts, initAllocations: initAllocations, _distributorFee: distributorFee });
+        lsf = new LiquidSplitFactory(address(splitMain));
+        ls = lsf.createLiquidSplitClone({
+            accounts: accounts,
+            initAllocations: initAllocations,
+            _distributorFee: distributorFee
+        });
     }
 
     /// -----------------------------------------------------------------------
@@ -64,7 +70,11 @@ contract LS1155Test is Test {
         accounts[0] = address(new ERC1155Recipient());
         accounts[1] = makeAddr("0xSplits.bob");
 
-        new LS1155({ _splitMain: address(splitMain), accounts: accounts, initAllocations: initAllocations, _distributorFee: distributorFee });
+        lsf.createLiquidSplitClone({
+            accounts: accounts,
+            initAllocations: initAllocations,
+            _distributorFee: distributorFee
+        });
     }
 
     function testCannot_allocateToZeroAddress() public {
@@ -72,13 +82,21 @@ contract LS1155Test is Test {
         accounts[0] = address(0);
 
         vm.expectRevert("UNSAFE_RECIPIENT");
-        new LS1155({ _splitMain: address(splitMain), accounts: accounts, initAllocations: initAllocations, _distributorFee: distributorFee });
+        lsf.createLiquidSplitClone({
+            accounts: accounts,
+            initAllocations: initAllocations,
+            _distributorFee: distributorFee
+        });
 
         accounts[0] = account;
         accounts[1] = address(0);
 
         vm.expectRevert("UNSAFE_RECIPIENT");
-        new LS1155({ _splitMain: address(splitMain), accounts: accounts, initAllocations: initAllocations, _distributorFee: distributorFee });
+        lsf.createLiquidSplitClone({
+            accounts: accounts,
+            initAllocations: initAllocations,
+            _distributorFee: distributorFee
+        });
     }
 
     function testCannot_allocateToNon721Recipient() public {
@@ -86,13 +104,21 @@ contract LS1155Test is Test {
         accounts[0] = address(new NonERC1155Recipient());
 
         vm.expectRevert();
-        new LS1155({ _splitMain: address(splitMain), accounts: accounts, initAllocations: initAllocations, _distributorFee: distributorFee });
+        lsf.createLiquidSplitClone({
+            accounts: accounts,
+            initAllocations: initAllocations,
+            _distributorFee: distributorFee
+        });
 
         accounts[0] = account;
         accounts[1] = address(new NonERC1155Recipient());
 
         vm.expectRevert();
-        new LS1155({ _splitMain: address(splitMain), accounts: accounts, initAllocations: initAllocations, _distributorFee: distributorFee });
+        lsf.createLiquidSplitClone({
+            accounts: accounts,
+            initAllocations: initAllocations,
+            _distributorFee: distributorFee
+        });
     }
 
     function testCannot_allocateToUnsafe721Recipient() public {
@@ -100,13 +126,21 @@ contract LS1155Test is Test {
         accounts[0] = address(new WrongReturnDataERC1155Recipient());
 
         vm.expectRevert("UNSAFE_RECIPIENT");
-        new LS1155({ _splitMain: address(splitMain), accounts: accounts, initAllocations: initAllocations, _distributorFee: distributorFee });
+        lsf.createLiquidSplitClone({
+            accounts: accounts,
+            initAllocations: initAllocations,
+            _distributorFee: distributorFee
+        });
 
         accounts[0] = account;
         accounts[1] = address(new WrongReturnDataERC1155Recipient());
 
         vm.expectRevert("UNSAFE_RECIPIENT");
-        new LS1155({ _splitMain: address(splitMain), accounts: accounts, initAllocations: initAllocations, _distributorFee: distributorFee });
+        lsf.createLiquidSplitClone({
+            accounts: accounts,
+            initAllocations: initAllocations,
+            _distributorFee: distributorFee
+        });
     }
 
     function testCannot_allocateToReverting721Recipient() public {
@@ -114,13 +148,21 @@ contract LS1155Test is Test {
         accounts[0] = address(new RevertingERC1155Recipient());
 
         vm.expectRevert(abi.encodeWithSelector(ERC1155TokenReceiver.onERC1155Received.selector));
-        new LS1155({ _splitMain: address(splitMain), accounts: accounts, initAllocations: initAllocations, _distributorFee: distributorFee });
+        lsf.createLiquidSplitClone({
+            accounts: accounts,
+            initAllocations: initAllocations,
+            _distributorFee: distributorFee
+        });
 
         accounts[0] = account;
         accounts[1] = address(new RevertingERC1155Recipient());
 
         vm.expectRevert(abi.encodeWithSelector(ERC1155TokenReceiver.onERC1155Received.selector));
-        new LS1155({ _splitMain: address(splitMain), accounts: accounts, initAllocations: initAllocations, _distributorFee: distributorFee });
+        lsf.createLiquidSplitClone({
+            accounts: accounts,
+            initAllocations: initAllocations,
+            _distributorFee: distributorFee
+        });
     }
 
     /// -----------------------------------------------------------------------
@@ -231,8 +273,11 @@ contract LS1155Test is Test {
         address[] memory _accounts = accounts;
         uint32[] memory _initAllocations = initAllocations;
 
-        ls =
-        new LS1155{salt: keccak256(bytes("0xSplits.liquid.test"))}({ _splitMain: address(splitMain), accounts: _accounts, initAllocations: _initAllocations, _distributorFee: distributorFee });
+        ls = lsf.createLiquidSplitClone({
+            accounts: _accounts,
+            initAllocations: _initAllocations,
+            _distributorFee: distributorFee
+        });
 
         address(ls).safeTransferETH(TOTAL_SUPPLY * 1 ether);
         uint256 gasStart = gasleft();
@@ -254,8 +299,11 @@ contract LS1155Test is Test {
     function testCan_payDistributorFee() public {
         distributorFee = uint32(PERCENTAGE_SCALE / 10); // = 10%
 
-        ls =
-        new LS1155{salt: keccak256(bytes("0xSplits.liquid.test"))}({ _splitMain: address(splitMain), accounts: accounts, initAllocations: initAllocations, _distributorFee: distributorFee });
+        ls = lsf.createLiquidSplitClone({
+            accounts: accounts,
+            initAllocations: initAllocations,
+            _distributorFee: distributorFee
+        });
 
         address[] memory _accounts = accounts;
         _accounts.sort();
