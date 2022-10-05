@@ -85,8 +85,7 @@ contract LS1155 is ERC1155, LiquidSplit {
         }
     }
 
-    // TODO
-
+    // TODO: uri
     /* function uri(uint256 id) public view override returns (string memory) { */
     function uri(uint256) public pure override returns (string memory) {
         return "uri";

@@ -10,9 +10,11 @@ import {ISplitMain} from "src/interfaces/ISplitMain.sol";
 import {MockERC20} from "./mocks/MockERC20.sol";
 
 import {LiquidSplitFactory} from "src/LiquidSplitFactory.sol";
-import {LS1155Impl} from "src/LS1155Impl.sol";
+import {LS1155CloneImpl} from "src/CloneImpl/LS1155CloneImpl.sol";
 
-contract LS1155ImplTest is Test {
+contract LS1155CloneImplTest is Test {
+    error Unauthorized();
+
     using SafeTransferLib for address;
     using LibSort for address[];
 
@@ -29,7 +31,7 @@ contract LS1155ImplTest is Test {
     ISplitMain public splitMain = ISplitMain(0x2ed6c4B5dA6378c7897AC67Ba9e43102Feb694EE);
     MockERC20 public mERC20;
     LiquidSplitFactory public lsf;
-    LS1155Impl public ls;
+    LS1155CloneImpl public ls;
 
     address[] public accounts;
     uint32[] public initAllocations;
@@ -64,7 +66,10 @@ contract LS1155ImplTest is Test {
     /// correctness tests - creation
     /// -----------------------------------------------------------------------
 
-    /* function testCan_createSplitOnCreation() public {} */
+    function testCannot_beInitializedByNonFactoryAddress() public {
+        vm.expectRevert(Unauthorized.selector);
+        ls.initializer({accounts: accounts, initAllocations: initAllocations, _distributorFee: distributorFee});
+    }
 
     function testCan_allocateToSafe721Recipient() public {
         accounts[0] = address(new ERC1155Recipient());

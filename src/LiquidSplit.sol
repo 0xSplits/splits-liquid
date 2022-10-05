@@ -29,6 +29,9 @@ abstract contract LiquidSplit {
     /// events
     /// -----------------------------------------------------------------------
 
+    /// Emitted after each liquid split creation for indexing purposes
+    event CreateLiquidSplit();
+
     /// Emitted after each successful ETH transfer to proxy
     /// @param amount Amount of ETH received
     /// @dev embedded in & emitted from clone bytecode
@@ -80,6 +83,8 @@ abstract contract LiquidSplit {
                 controller: address(this)
             })
         );
+
+        emit CreateLiquidSplit();
     }
 
     /// -----------------------------------------------------------------------

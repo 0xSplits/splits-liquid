@@ -5,19 +5,17 @@ import {ERC20} from "solmate/tokens/ERC20.sol";
 import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
 import {ISplitMain} from "src/interfaces/ISplitMain.sol";
 
-// TODO review natspec lang
-
 /// @title LiquidSplit
 /// @author 0xSplits
-/// @notice An abstract liquid split base (ownership in a split is represented by 1155s).
-/// Each 1155 = 0.1% of the split.
+/// @notice An abstract liquid split base designed to be used as part of a
+/// clone implementation.
 /// @dev This contract uses token = address(0) to refer to ETH.
-abstract contract LiquidSplitImpl {
+abstract contract LiquidSplitCloneImpl {
     /// -----------------------------------------------------------------------
     /// errors
     /// -----------------------------------------------------------------------
 
-    /// Invalid distributorFee `distributorFee` cannot be greater than `MAX_DISTRIBUTOR_FEE`
+    /// Invalid distributorFee: `distributorFee` cannot be greater than `MAX_DISTRIBUTOR_FEE`
     /// @param distributorFee Invalid distributorFee amount
     error InvalidLiquidSplit__InvalidDistributorFee(uint32 distributorFee);
 
@@ -45,19 +43,25 @@ abstract contract LiquidSplitImpl {
     uint256 public constant MAX_DISTRIBUTOR_FEE = 1e5; // = 10% * PERCENTAGE_SCALE
 
     ISplitMain public immutable splitMain;
-    /* uint32 public immutable distributorFee; */
+    address internal immutable liquidSplitFactory;
+    // TODO: use cwia
+    // no way to make payoutSplit immutable w clones right? would have to pre-compute & pass in
     /* address public immutable payoutSplit; */
-    uint32 public distributorFee;
     address public payoutSplit;
+    /* uint32 public immutable distributorFee; */
+    uint32 public distributorFee;
 
     /// -----------------------------------------------------------------------
     /// constructor & initializer
     /// -----------------------------------------------------------------------
 
     constructor(address _splitMain) {
-        splitMain = ISplitMain(_splitMain); /*Establish interface to splits contract*/
+        splitMain = ISplitMain(_splitMain);
+        liquidSplitFactory = msg.sender;
     }
 
+    /// @dev cannot be called externally by default; inheriting contracts must
+    /// be sure to properly secure any calls
     function initializer(uint32 _distributorFee) internal {
         /// checks
 

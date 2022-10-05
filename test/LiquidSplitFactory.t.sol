@@ -12,6 +12,8 @@ import {MockERC20} from "./mocks/MockERC20.sol";
 import {LiquidSplitFactory} from "src/LiquidSplitFactory.sol";
 
 contract LiquidSplitFactoryTest is Test {
+    error InvalidLiquidSplit__InvalidDistributorFee(uint32 distributorFee);
+
     using SafeTransferLib for address;
     using LibSort for address[];
 
@@ -21,6 +23,7 @@ contract LiquidSplitFactoryTest is Test {
     uint256 constant GAS_BLOCK_LIMIT = 30_000_000;
 
     uint256 constant PERCENTAGE_SCALE = 1e6;
+    uint32 constant MAX_DISTRIBUTOR_FEE = 1e5; // = 10% * PERCENTAGE_SCALE
     uint256 constant TOTAL_SUPPLY = 1e3;
     address constant ETH_ADDRESS = address(0);
     uint256 constant TOKEN_ID = 0;
@@ -122,15 +125,41 @@ contract LiquidSplitFactoryTest is Test {
     /// correctness tests - basic
     /// -----------------------------------------------------------------------
 
-    function testCan_createLS1155() public {
-        lsf.createLiquidSplit({accounts: accounts, initAllocations: initAllocations, _distributorFee: distributorFee});
+    function testCan_createLS1155_base() public {
+        lsf.createLiquidSplit({
+            accounts: accounts,
+            initAllocations: initAllocations,
+            _distributorFee: MAX_DISTRIBUTOR_FEE
+        });
     }
 
-    function testCan_createLS1155Clone() public {
+    function testCan_createLS1155_clone() public {
         lsf.createLiquidSplitClone({
             accounts: accounts,
             initAllocations: initAllocations,
-            _distributorFee: distributorFee
+            _distributorFee: MAX_DISTRIBUTOR_FEE
+        });
+    }
+
+    function testCannot_createLS1155WithTooLargeDistributorFee_base() public {
+        vm.expectRevert(
+            abi.encodeWithSelector(InvalidLiquidSplit__InvalidDistributorFee.selector, MAX_DISTRIBUTOR_FEE + 1)
+        );
+        lsf.createLiquidSplit({
+            accounts: accounts,
+            initAllocations: initAllocations,
+            _distributorFee: MAX_DISTRIBUTOR_FEE + 1
+        });
+    }
+
+    function testCannot_createLS1155WithTooLargeDistributorFee_clone() public {
+        vm.expectRevert(
+            abi.encodeWithSelector(InvalidLiquidSplit__InvalidDistributorFee.selector, MAX_DISTRIBUTOR_FEE + 1)
+        );
+        lsf.createLiquidSplitClone({
+            accounts: accounts,
+            initAllocations: initAllocations,
+            _distributorFee: MAX_DISTRIBUTOR_FEE + 1
         });
     }
 

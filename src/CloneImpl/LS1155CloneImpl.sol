@@ -3,17 +3,20 @@ pragma solidity ^0.8.17;
 
 import {ERC1155} from "solmate/tokens/ERC1155.sol";
 import {Clone} from "solady/utils/Clone.sol";
-import {LiquidSplitImpl} from "src/LiquidSplitImpl.sol";
+import {LiquidSplitCloneImpl} from "src/CloneImpl/LiquidSplitCloneImpl.sol";
 
 /// @title 1155LiquidSplit
 /// @author 0xSplits
 /// @notice A minimal liquid splits implementation (ownership in a split is represented by 1155s).
 /// Each 1155 = 0.1% of the split.
 /// @dev This contract uses token = address(0) to refer to ETH.
-contract LS1155Impl is ERC1155, Clone, LiquidSplitImpl {
+contract LS1155CloneImpl is ERC1155, Clone, LiquidSplitCloneImpl {
     /// -----------------------------------------------------------------------
     /// errors
     /// -----------------------------------------------------------------------
+
+    /// Unauthorized msg.sender
+    error Unauthorized();
 
     /// Array lengths of accounts & percentAllocations don't match (`accountsLength` != `allocationsLength`)
     /// @param accountsLength Length of accounts array
@@ -30,23 +33,24 @@ contract LS1155Impl is ERC1155, Clone, LiquidSplitImpl {
 
     uint256 internal constant TOKEN_ID = 0;
     uint256 public constant TOTAL_SUPPLY = 1e3;
-    uint256 public constant SUPPLY_TO_PERCENTAGE = 1e3; // = PERCENTAGE_SCALE / TOTAL_SUPPLY
+    uint256 public constant SUPPLY_TO_PERCENTAGE = 1e3; // = PERCENTAGE_SCALE / TOTAL_SUPPLY = 1e6 / 1e3
 
     /// -----------------------------------------------------------------------
     /// constructor & initializer
     /// -----------------------------------------------------------------------
 
     // solhint-disable-next-line no-empty-blocks
-    constructor(address _splitMain) LiquidSplitImpl(_splitMain) {}
-
-    // TODO: check if initialized
-    // or only allow msg.sender to be factory
-    // TODO: use cwia for dist fee
+    constructor(address _splitMain) LiquidSplitCloneImpl(_splitMain) {}
 
     function initializer(address[] calldata accounts, uint32[] calldata initAllocations, uint32 _distributorFee)
         external
     {
         /// checks
+
+        // only liquidSplitFactory may call `initializer`
+        if (msg.sender != liquidSplitFactory) {
+            revert Unauthorized();
+        }
 
         if (accounts.length != initAllocations.length) {
             revert InvalidLiquidSplit__AccountsAndAllocationsMismatch(accounts.length, initAllocations.length);
@@ -59,9 +63,11 @@ contract LS1155Impl is ERC1155, Clone, LiquidSplitImpl {
             }
         }
 
-        /// interactions
+        /// effects
 
-        LiquidSplitImpl.initializer(_distributorFee);
+        LiquidSplitCloneImpl.initializer(_distributorFee);
+
+        /// interactions
 
         // mint NFTs to initial holders
         uint256 numAccs = accounts.length;
@@ -86,17 +92,16 @@ contract LS1155Impl is ERC1155, Clone, LiquidSplitImpl {
 
     function scaledPercentBalanceOf(address account) internal view override returns (uint32) {
         unchecked {
-            // can't overflow; invariant:
+            // can't overflow;
             // sum(balanceOf) == TOTAL_SUPPLY = 1e3
             // SUPPLY_TO_PERCENTAGE = 1e6 / 1e3 = 1e3
             // =>
-            // sum(balanceOf[i] * SUPPLY_TO_PERCENTAGE) == PERCENTAGE_SCALE = 1e6)
+            // sum(balanceOf[i] * SUPPLY_TO_PERCENTAGE) == PERCENTAGE_SCALE = 1e6 << 2^32)
             return uint32(balanceOf[account][TOKEN_ID] * SUPPLY_TO_PERCENTAGE);
         }
     }
 
-    // TODO
-
+    // TODO: uri
     /* function uri(uint256 id) public view override returns (string memory) { */
     function uri(uint256) public pure override returns (string memory) {
         return "uri";

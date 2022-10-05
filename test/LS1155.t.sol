@@ -15,6 +15,7 @@ contract LS1155Test is Test {
     using SafeTransferLib for address;
     using LibSort for address[];
 
+    event CreateLiquidSplit();
     event ReceiveETH(uint256 amount);
 
     uint256 constant BLOCK_NUMBER = 15619912;
@@ -58,7 +59,12 @@ contract LS1155Test is Test {
     /// correctness tests - creation
     /// -----------------------------------------------------------------------
 
-    /* function testCan_createSplitOnCreation() public {} */
+    function testCan_emitOnCreation() public {
+        vm.expectEmit(true, true, true, true);
+        emit CreateLiquidSplit();
+
+        new LS1155({ _splitMain: address(splitMain), accounts: accounts, initAllocations: initAllocations, _distributorFee: distributorFee });
+    }
 
     function testCan_allocateToSafe721Recipient() public {
         accounts[0] = address(new ERC1155Recipient());
