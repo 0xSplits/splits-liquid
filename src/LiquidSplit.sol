@@ -7,18 +7,10 @@ import {ISplitMain} from "src/interfaces/ISplitMain.sol";
 
 /// @title LiquidSplit
 /// @author 0xSplits
-/// @notice An abstract liquid split base (ownership in a split is represented by 1155s).
-/// Each 1155 = 0.1% of the split.
+/// @notice An abstract liquid split base contract.
+/// Ownership in a split is represented by 1155s (each = 0.1% of split)
 /// @dev This contract uses token = address(0) to refer to ETH.
 abstract contract LiquidSplit {
-    /// -----------------------------------------------------------------------
-    /// errors
-    /// -----------------------------------------------------------------------
-
-    /// Invalid distributorFee `distributorFee` cannot be greater than `MAX_DISTRIBUTOR_FEE`
-    /// @param distributorFee Invalid distributorFee amount
-    error InvalidLiquidSplit__InvalidDistributorFee(uint32 distributorFee);
-
     /// -----------------------------------------------------------------------
     /// libraries
     /// -----------------------------------------------------------------------
@@ -43,27 +35,24 @@ abstract contract LiquidSplit {
 
     address internal constant ETH_ADDRESS = address(0);
     uint256 public constant PERCENTAGE_SCALE = 1e6;
-    uint256 public constant MAX_DISTRIBUTOR_FEE = 1e5; // = 10% * PERCENTAGE_SCALE
 
     ISplitMain public immutable splitMain;
-    uint32 public immutable distributorFee;
+    uint32 public immutable _distributorFee;
     address public immutable payoutSplit;
 
     /// -----------------------------------------------------------------------
     /// constructor
     /// -----------------------------------------------------------------------
 
-    constructor(address _splitMain, uint32 _distributorFee) {
+    constructor(address _splitMain, uint32 __distributorFee) {
         /// checks
 
-        if (_distributorFee > MAX_DISTRIBUTOR_FEE) {
-            revert InvalidLiquidSplit__InvalidDistributorFee(_distributorFee);
-        }
+        // __distributorFee is checked inside `splitMain.createSplit`
 
         /// effects
 
         splitMain = ISplitMain(_splitMain); /*Establish interface to splits contract*/
-        distributorFee = _distributorFee;
+        _distributorFee = __distributorFee;
 
         /// interactions
 
@@ -79,7 +68,7 @@ abstract contract LiquidSplit {
             splitMain.createSplit({
                 accounts: recipients,
                 percentAllocations: initPercentAllocations,
-                distributorFee: 0,
+                distributorFee: __distributorFee,
                 controller: address(this)
             })
         );
@@ -121,7 +110,7 @@ abstract contract LiquidSplit {
                 split: payoutSplit,
                 accounts: accounts,
                 percentAllocations: percentAllocations,
-                distributorFee: distributorFee,
+                distributorFee: distributorFee(),
                 distributorAddress: distributorAddress
             });
         } else {
@@ -131,7 +120,7 @@ abstract contract LiquidSplit {
                 token: ERC20(token),
                 accounts: accounts,
                 percentAllocations: percentAllocations,
-                distributorFee: distributorFee,
+                distributorFee: distributorFee(),
                 distributorAddress: distributorAddress
             });
         }
@@ -142,4 +131,9 @@ abstract contract LiquidSplit {
     /// -----------------------------------------------------------------------
 
     function scaledPercentBalanceOf(address account) internal view virtual returns (uint32) {}
+
+    /// @dev can be overridden if inheriting contract wants to grant the ability for an owner to update
+    function distributorFee() public view virtual returns (uint32) {
+        return _distributorFee;
+    }
 }

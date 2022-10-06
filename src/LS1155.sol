@@ -6,8 +6,8 @@ import {ERC1155} from "solmate/tokens/ERC1155.sol";
 
 /// @title 1155LiquidSplit
 /// @author 0xSplits
-/// @notice A minimal liquid splits implementation (ownership in a split is represented by 1155s).
-/// Each 1155 = 0.1% of the split.
+/// @notice A minimal liquid splits implementation.
+/// Ownership in a split is represented by 1155s (each = 0.1% of split)
 /// @dev This contract uses token = address(0) to refer to ETH.
 contract LS1155 is ERC1155, LiquidSplit {
     /// -----------------------------------------------------------------------
@@ -29,7 +29,7 @@ contract LS1155 is ERC1155, LiquidSplit {
 
     uint256 internal constant TOKEN_ID = 0;
     uint256 public constant TOTAL_SUPPLY = 1e3;
-    uint256 public constant SUPPLY_TO_PERCENTAGE = 1e3; // = PERCENTAGE_SCALE / TOTAL_SUPPLY
+    uint256 public constant SUPPLY_TO_PERCENTAGE = 1e3; // = PERCENTAGE_SCALE / TOTAL_SUPPLY = 1e6 / 1e3
 
     /// -----------------------------------------------------------------------
     /// constructor

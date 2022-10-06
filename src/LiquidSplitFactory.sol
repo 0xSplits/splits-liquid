@@ -64,22 +64,23 @@ contract LiquidSplitFactory {
     /// functions - public & external
     /// -----------------------------------------------------------------------
 
-    // TODO: verify subgraph can pull xfer events to reconstruct accounts & initAllocations
-    // TODO: verify subgraph can pull distributorFee from contract
+    function createLiquidSplit(address[] calldata accounts, uint32[] calldata initAllocations, uint32 _distributorFee)
+        external
+        returns (LS1155 ls)
+    {
+        /// checks
 
-    // TODO: memory vs calldata
+        // params are validated inside LS1155 constructor
 
-    function createLiquidSplit(
-        address[] memory accounts, // vs calldata
-        uint32[] memory initAllocations, // vs calldata
-        uint32 _distributorFee
-    ) external returns (LS1155 ls) {
+        /// effects
+
+        /// interactions
         ls = new LS1155({
             _splitMain: splitMain,
             accounts: accounts,
             initAllocations: initAllocations,
             _distributorFee: _distributorFee
-        });
+            });
         emit CreateLS1155(ls);
     }
 

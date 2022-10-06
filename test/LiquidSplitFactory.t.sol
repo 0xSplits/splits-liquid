@@ -13,6 +13,7 @@ import {LiquidSplitFactory} from "src/LiquidSplitFactory.sol";
 
 contract LiquidSplitFactoryTest is Test {
     error InvalidLiquidSplit__InvalidDistributorFee(uint32 distributorFee);
+    error InvalidSplit__InvalidDistributorFee(uint32 distributorFee);
 
     using SafeTransferLib for address;
     using LibSort for address[];
@@ -142,9 +143,7 @@ contract LiquidSplitFactoryTest is Test {
     }
 
     function testCannot_createLS1155WithTooLargeDistributorFee_base() public {
-        vm.expectRevert(
-            abi.encodeWithSelector(InvalidLiquidSplit__InvalidDistributorFee.selector, MAX_DISTRIBUTOR_FEE + 1)
-        );
+        vm.expectRevert(abi.encodeWithSelector(InvalidSplit__InvalidDistributorFee.selector, MAX_DISTRIBUTOR_FEE + 1));
         lsf.createLiquidSplit({
             accounts: accounts,
             initAllocations: initAllocations,
