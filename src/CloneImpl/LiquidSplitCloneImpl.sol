@@ -3,22 +3,15 @@ pragma solidity ^0.8.17;
 
 import {ERC20} from "solmate/tokens/ERC20.sol";
 import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
+import {Clone} from "solady/utils/Clone.sol";
 import {ISplitMain} from "src/interfaces/ISplitMain.sol";
 
-/// @title LiquidSplit
+/// @title LiquidSplitCloneImpl
 /// @author 0xSplits
 /// @notice An abstract liquid split base designed to be used as part of a
-/// clone implementation.
+/// clones-with-immutable-args implementation.
 /// @dev This contract uses token = address(0) to refer to ETH.
-abstract contract LiquidSplitCloneImpl {
-    /// -----------------------------------------------------------------------
-    /// errors
-    /// -----------------------------------------------------------------------
-
-    /// Invalid distributorFee: `distributorFee` cannot be greater than `MAX_DISTRIBUTOR_FEE`
-    /// @param distributorFee Invalid distributorFee amount
-    error InvalidLiquidSplit__InvalidDistributorFee(uint32 distributorFee);
-
+abstract contract LiquidSplitCloneImpl is Clone {
     /// -----------------------------------------------------------------------
     /// libraries
     /// -----------------------------------------------------------------------
@@ -40,16 +33,23 @@ abstract contract LiquidSplitCloneImpl {
 
     address internal constant ETH_ADDRESS = address(0);
     uint256 public constant PERCENTAGE_SCALE = 1e6;
-    uint256 public constant MAX_DISTRIBUTOR_FEE = 1e5; // = 10% * PERCENTAGE_SCALE
 
     ISplitMain public immutable splitMain;
     address internal immutable liquidSplitFactory;
-    // TODO: use cwia
-    // no way to make payoutSplit immutable w clones right? would have to pre-compute & pass in
-    /* address public immutable payoutSplit; */
+
     address public payoutSplit;
-    /* uint32 public immutable distributorFee; */
-    uint32 public distributorFee;
+
+    /// -----------------------------------------------------------------------
+    /// storage - cwia
+    /// -----------------------------------------------------------------------
+
+    // 0; first item
+    uint256 internal constant DISTRIBUTOR_FEE_OFFSET = 0;
+
+    /// @dev equivalent to uint32 public immutable distributorFee;
+    function distributorFee() public pure returns (uint32) {
+        return _getArgUint32(DISTRIBUTOR_FEE_OFFSET);
+    }
 
     /// -----------------------------------------------------------------------
     /// constructor & initializer
@@ -62,16 +62,10 @@ abstract contract LiquidSplitCloneImpl {
 
     /// @dev cannot be called externally by default; inheriting contracts must
     /// be sure to properly secure any calls
-    function initializer(uint32 _distributorFee) internal {
+    function initializer() internal {
         /// checks
 
-        if (_distributorFee > MAX_DISTRIBUTOR_FEE) {
-            revert InvalidLiquidSplit__InvalidDistributorFee(_distributorFee);
-        }
-
         /// effects
-
-        distributorFee = _distributorFee;
 
         /// interactions
 
@@ -128,7 +122,7 @@ abstract contract LiquidSplitCloneImpl {
                 split: payoutSplit,
                 accounts: accounts,
                 percentAllocations: percentAllocations,
-                distributorFee: distributorFee,
+                distributorFee: distributorFee(),
                 distributorAddress: distributorAddress
             });
         } else {
@@ -138,7 +132,7 @@ abstract contract LiquidSplitCloneImpl {
                 token: ERC20(token),
                 accounts: accounts,
                 percentAllocations: percentAllocations,
-                distributorFee: distributorFee,
+                distributorFee: distributorFee(),
                 distributorAddress: distributorAddress
             });
         }
@@ -149,4 +143,12 @@ abstract contract LiquidSplitCloneImpl {
     /// -----------------------------------------------------------------------
 
     function scaledPercentBalanceOf(address account) internal view virtual returns (uint32) {}
+
+    /// @dev Reads an immutable arg with type uint32.
+    function _getArgUint32(uint256 argOffset) internal pure returns (uint32 arg) {
+        uint256 offset = _getImmutableArgsOffset();
+        assembly {
+            arg := shr(0xe0, calldataload(add(offset, argOffset)))
+        }
+    }
 }

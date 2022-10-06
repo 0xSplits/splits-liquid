@@ -2,15 +2,15 @@
 pragma solidity ^0.8.17;
 
 import {ERC1155} from "solmate/tokens/ERC1155.sol";
-import {Clone} from "solady/utils/Clone.sol";
 import {LiquidSplitCloneImpl} from "src/CloneImpl/LiquidSplitCloneImpl.sol";
 
 /// @title 1155LiquidSplit
 /// @author 0xSplits
-/// @notice A minimal liquid splits implementation (ownership in a split is represented by 1155s).
-/// Each 1155 = 0.1% of the split.
+/// @notice A minimal liquid split implementation designed to be used as part of a
+/// clones-with-immutable-args implementation.
+/// Ownership in a split is represented by 1155s (each = 0.1% of split)
 /// @dev This contract uses token = address(0) to refer to ETH.
-contract LS1155CloneImpl is ERC1155, Clone, LiquidSplitCloneImpl {
+contract LS1155CloneImpl is ERC1155, LiquidSplitCloneImpl {
     /// -----------------------------------------------------------------------
     /// errors
     /// -----------------------------------------------------------------------
@@ -42,9 +42,7 @@ contract LS1155CloneImpl is ERC1155, Clone, LiquidSplitCloneImpl {
     // solhint-disable-next-line no-empty-blocks
     constructor(address _splitMain) LiquidSplitCloneImpl(_splitMain) {}
 
-    function initializer(address[] calldata accounts, uint32[] calldata initAllocations, uint32 _distributorFee)
-        external
-    {
+    function initializer(address[] calldata accounts, uint32[] calldata initAllocations) external {
         /// checks
 
         // only liquidSplitFactory may call `initializer`
@@ -65,7 +63,7 @@ contract LS1155CloneImpl is ERC1155, Clone, LiquidSplitCloneImpl {
 
         /// effects
 
-        LiquidSplitCloneImpl.initializer(_distributorFee);
+        LiquidSplitCloneImpl.initializer();
 
         /// interactions
 

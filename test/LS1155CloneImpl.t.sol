@@ -68,7 +68,7 @@ contract LS1155CloneImplTest is Test {
 
     function testCannot_beInitializedByNonFactoryAddress() public {
         vm.expectRevert(Unauthorized.selector);
-        ls.initializer({accounts: accounts, initAllocations: initAllocations, _distributorFee: distributorFee});
+        ls.initializer({accounts: accounts, initAllocations: initAllocations});
     }
 
     function testCan_allocateToSafe721Recipient() public {

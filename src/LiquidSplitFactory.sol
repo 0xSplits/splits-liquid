@@ -7,14 +7,15 @@ import {LibClone} from "solady/utils/LibClone.sol";
 
 /// @title LiquidSplitFactory
 /// @author 0xSplits
-/// @notice A factory contract for deploying liquid splits.
-/// @dev This factory uses our own extension of clones-with-immutable-args to avoid
-/// `DELEGATECALL` inside `receive()` to accept hard gas-capped `sends` & `transfers`
-/// for maximum backwards composability.
+/// @notice A factory contract for deploying 0xSplits' minimal liquid splits.
 contract LiquidSplitFactory {
     /// -----------------------------------------------------------------------
     /// errors
     /// -----------------------------------------------------------------------
+
+    /// Invalid distributorFee: `distributorFee` cannot be greater than `MAX_DISTRIBUTOR_FEE`
+    /// @param distributorFee Invalid distributorFee amount
+    error InvalidLiquidSplit__InvalidDistributorFee(uint32 distributorFee);
 
     /// -----------------------------------------------------------------------
     /// libraries
@@ -34,6 +35,8 @@ contract LiquidSplitFactory {
     /// storage
     /// -----------------------------------------------------------------------
 
+    uint256 public constant MAX_DISTRIBUTOR_FEE = 1e5; // = 10% * PERCENTAGE_SCALE
+
     address public immutable splitMain;
     address public immutable ls1155CloneImpl;
 
@@ -47,9 +50,10 @@ contract LiquidSplitFactory {
         /// effects
 
         splitMain = _splitMain;
-        ls1155CloneImpl = address(new LS1155CloneImpl(_splitMain));
 
         /// interactions
+
+        ls1155CloneImpl = address(new LS1155CloneImpl(_splitMain));
     }
 
     /// -----------------------------------------------------------------------
@@ -80,12 +84,24 @@ contract LiquidSplitFactory {
     }
 
     function createLiquidSplitClone(
-        address[] memory accounts, // vs calldata
-        uint32[] memory initAllocations, // vs calldata
+        address[] calldata accounts,
+        uint32[] calldata initAllocations,
         uint32 _distributorFee
     ) external returns (LS1155CloneImpl ls) {
-        ls = LS1155CloneImpl(ls1155CloneImpl.clone(""));
+        /// checks
+
+        // accounts & initAllocations are validated inside initializer
+
+        if (_distributorFee > MAX_DISTRIBUTOR_FEE) {
+            revert InvalidLiquidSplit__InvalidDistributorFee(_distributorFee);
+        }
+
+        /// effects
+
+        /// interactions
+
+        ls = LS1155CloneImpl(ls1155CloneImpl.clone(abi.encodePacked(_distributorFee)));
         emit CreateLS1155Clone(ls);
-        ls.initializer({accounts: accounts, initAllocations: initAllocations, _distributorFee: _distributorFee});
+        ls.initializer({accounts: accounts, initAllocations: initAllocations});
     }
 }
