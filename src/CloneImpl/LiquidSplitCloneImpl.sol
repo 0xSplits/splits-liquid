@@ -142,7 +142,7 @@ abstract contract LiquidSplitCloneImpl is Clone {
     /// functions - public & external - view & pure
     /// -----------------------------------------------------------------------
 
-    function scaledPercentBalanceOf(address account) internal view virtual returns (uint32) {}
+    function scaledPercentBalanceOf(address account) public view virtual returns (uint32) {}
 
     /// @dev Reads an immutable arg with type uint32.
     function _getArgUint32(uint256 argOffset) internal pure returns (uint32 arg) {

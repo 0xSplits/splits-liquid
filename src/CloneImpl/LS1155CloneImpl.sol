@@ -88,7 +88,7 @@ contract LS1155CloneImpl is ERC1155, LiquidSplitCloneImpl {
     /// functions - public & external - view & pure
     /// -----------------------------------------------------------------------
 
-    function scaledPercentBalanceOf(address account) internal view override returns (uint32) {
+    function scaledPercentBalanceOf(address account) public view override returns (uint32) {
         unchecked {
             // can't overflow;
             // sum(balanceOf) == TOTAL_SUPPLY = 1e3

@@ -130,7 +130,7 @@ abstract contract LiquidSplit {
     /// functions - public & external - view & pure
     /// -----------------------------------------------------------------------
 
-    function scaledPercentBalanceOf(address account) internal view virtual returns (uint32) {}
+    function scaledPercentBalanceOf(address account) public view virtual returns (uint32) {}
 
     /// @dev can be overridden if inheriting contract wants to grant the ability for an owner to update
     function distributorFee() public view virtual returns (uint32) {
