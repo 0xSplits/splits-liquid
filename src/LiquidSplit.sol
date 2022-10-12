@@ -7,8 +7,8 @@ import {ISplitMain} from "src/interfaces/ISplitMain.sol";
 
 /// @title LiquidSplit
 /// @author 0xSplits
-/// @notice An abstract liquid split base contract.
-/// Ownership in a split is represented by 1155s (each = 0.1% of split)
+/// @notice An abstract liquid split base contract. Can be inherited into a 721
+/// or 1155 contract.
 /// @dev This contract uses token = address(0) to refer to ETH.
 abstract contract LiquidSplit {
     /// -----------------------------------------------------------------------
