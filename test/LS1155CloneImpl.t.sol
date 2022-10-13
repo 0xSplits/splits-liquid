@@ -395,15 +395,15 @@ contract LS1155CloneImplTest is Test {
     /// correctness tests - fuzzing
     /// -----------------------------------------------------------------------
 
-        function testCan_storeMintedOnTimestamp(uint128 tsStart, uint128 tsSkip) public {
-            vm.warp(tsStart);
+    function testCan_storeMintedOnTimestamp(uint128 tsStart, uint128 tsSkip) public {
+        vm.warp(tsStart);
 
         ls = lsf.createLiquidSplitClone({
             accounts: accounts,
             initAllocations: initAllocations,
             _distributorFee: distributorFee,
             owner: owner
-            });
+        });
 
         skip(tsSkip);
 
