@@ -105,7 +105,7 @@ contract LiquidSplitFactory {
 
         /// interactions
 
-        ls = LS1155CloneImpl(ls1155CloneImpl.clone(abi.encodePacked(_distributorFee)));
+        ls = LS1155CloneImpl(ls1155CloneImpl.clone(abi.encodePacked(_distributorFee, block.timestamp)));
         emit CreateLS1155Clone(ls);
         ls.initializer({accounts: accounts, initAllocations: initAllocations, _owner: owner});
     }

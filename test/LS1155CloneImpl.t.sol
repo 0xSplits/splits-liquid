@@ -100,28 +100,6 @@ contract LS1155CloneImplTest is Test {
         });
     }
 
-    function testCan_transferOwnership() public {
-        assertEq(address(this), ls.owner());
-
-        vm.expectEmit(true, true, true, true);
-        emit OwnershipTransferred(address(this), address(0));
-
-        ls.transferOwnership(address(0));
-
-        assertEq(address(0), ls.owner());
-    }
-
-    function testCannot_transferOwnershipByNonOwner() public {
-        assertEq(address(this), ls.owner());
-
-
-        vm.prank(address(0xDEADBEEF));
-        vm.expectRevert("UNAUTHORIZED");
-        ls.transferOwnership(address(0));
-
-        assertEq(address(this), ls.owner());
-    }
-
     function testCannot_beInitializedByNonFactoryAddress() public {
         vm.expectRevert(Unauthorized.selector);
         ls.initializer({accounts: accounts, initAllocations: initAllocations, _owner: owner});
@@ -238,6 +216,27 @@ contract LS1155CloneImplTest is Test {
     /// -----------------------------------------------------------------------
     /// correctness tests - basic
     /// -----------------------------------------------------------------------
+
+    function testCan_transferOwnership() public {
+        assertEq(address(this), ls.owner());
+
+        vm.expectEmit(true, true, true, true);
+        emit OwnershipTransferred(address(this), address(0));
+
+        ls.transferOwnership(address(0));
+
+        assertEq(address(0), ls.owner());
+    }
+
+    function testCannot_transferOwnershipByNonOwner() public {
+        assertEq(address(this), ls.owner());
+
+        vm.prank(address(0xDEADBEEF));
+        vm.expectRevert("UNAUTHORIZED");
+        ls.transferOwnership(address(0));
+
+        assertEq(address(this), ls.owner());
+    }
 
     function testCan_receiveETH() public {
         address(ls).safeTransferETH(1 ether);
@@ -395,6 +394,21 @@ contract LS1155CloneImplTest is Test {
     /// -----------------------------------------------------------------------
     /// correctness tests - fuzzing
     /// -----------------------------------------------------------------------
+
+        function testCan_storeMintedOnTimestamp(uint128 tsStart, uint128 tsSkip) public {
+            vm.warp(tsStart);
+
+        ls = lsf.createLiquidSplitClone({
+            accounts: accounts,
+            initAllocations: initAllocations,
+            _distributorFee: distributorFee,
+            owner: owner
+            });
+
+        skip(tsSkip);
+
+        assertEq(tsStart, ls.mintedOnTimestamp());
+    }
 }
 
 contract ERC1155Recipient is ERC1155TokenReceiver {

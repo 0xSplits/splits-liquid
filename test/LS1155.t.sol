@@ -71,7 +71,7 @@ contract LS1155Test is Test {
         owner = address(0);
 
         ls =
-        new LS1155{salt: keccak256(bytes("0xSplits.liquid.test"))}({ _splitMain: address(splitMain), accounts: accounts, initAllocations: initAllocations, _distributorFee: distributorFee, _owner: owner });
+        new LS1155({ _splitMain: address(splitMain), accounts: accounts, initAllocations: initAllocations, _distributorFee: distributorFee, _owner: owner });
 
         assertEq(address(0), ls.owner());
     }
@@ -86,28 +86,6 @@ contract LS1155Test is Test {
         emit OwnershipTransferred(address(0), address(this));
 
         new LS1155({ _splitMain: address(splitMain), accounts: accounts, initAllocations: initAllocations, _distributorFee: distributorFee, _owner: address(this) });
-    }
-
-    function testCan_transferOwnership() public {
-        assertEq(address(this), ls.owner());
-
-        vm.expectEmit(true, true, true, true);
-        emit OwnershipTransferred(address(this), address(0));
-
-        ls.transferOwnership(address(0));
-
-        assertEq(address(0), ls.owner());
-    }
-
-    function testCannot_transferOwnershipByNonOwner() public {
-        assertEq(address(this), ls.owner());
-
-
-        vm.prank(address(0xDEADBEEF));
-        vm.expectRevert("UNAUTHORIZED");
-        ls.transferOwnership(address(0));
-
-        assertEq(address(this), ls.owner());
     }
 
     function testCan_allocateToSafe721Recipient() public {
@@ -176,6 +154,27 @@ contract LS1155Test is Test {
     /// -----------------------------------------------------------------------
     /// correctness tests - basic
     /// -----------------------------------------------------------------------
+
+    function testCan_transferOwnership() public {
+        assertEq(address(this), ls.owner());
+
+        vm.expectEmit(true, true, true, true);
+        emit OwnershipTransferred(address(this), address(0));
+
+        ls.transferOwnership(address(0));
+
+        assertEq(address(0), ls.owner());
+    }
+
+    function testCannot_transferOwnershipByNonOwner() public {
+        assertEq(address(this), ls.owner());
+
+        vm.prank(address(0xDEADBEEF));
+        vm.expectRevert("UNAUTHORIZED");
+        ls.transferOwnership(address(0));
+
+        assertEq(address(this), ls.owner());
+    }
 
     function testCan_receiveETH() public {
         address(ls).safeTransferETH(1 ether);
@@ -282,7 +281,7 @@ contract LS1155Test is Test {
         uint32[] memory _initAllocations = initAllocations;
 
         ls =
-        new LS1155{salt: keccak256(bytes("0xSplits.liquid.test"))}({ _splitMain: address(splitMain), accounts: _accounts, initAllocations: _initAllocations, _distributorFee: distributorFee, _owner: owner });
+        new LS1155({ _splitMain: address(splitMain), accounts: _accounts, initAllocations: _initAllocations, _distributorFee: distributorFee, _owner: owner });
 
         address(ls).safeTransferETH(TOTAL_SUPPLY * 1 ether);
         uint256 gasStart = gasleft();
@@ -305,7 +304,7 @@ contract LS1155Test is Test {
         distributorFee = uint32(PERCENTAGE_SCALE / 10); // = 10%
 
         ls =
-        new LS1155{salt: keccak256(bytes("0xSplits.liquid.test"))}({ _splitMain: address(splitMain), accounts: accounts, initAllocations: initAllocations, _distributorFee: distributorFee, _owner: owner });
+        new LS1155({ _splitMain: address(splitMain), accounts: accounts, initAllocations: initAllocations, _distributorFee: distributorFee, _owner: owner });
 
         address[] memory _accounts = accounts;
         _accounts.sort();
@@ -325,6 +324,22 @@ contract LS1155Test is Test {
     /// -----------------------------------------------------------------------
     /// correctness tests - fuzzing
     /// -----------------------------------------------------------------------
+
+    function testCan_storeMintedOnTimestamp(uint128 tsStart, uint128 tsSkip) public {
+        vm.warp(tsStart);
+
+        ls = new LS1155({
+            _splitMain: address(splitMain),
+            accounts: accounts,
+            initAllocations: initAllocations,
+            _distributorFee: distributorFee,
+            _owner: owner
+            });
+
+        skip(tsSkip);
+
+        assertEq(tsStart, ls.mintedOnTimestamp());
+    }
 }
 
 contract ERC1155Recipient is ERC1155TokenReceiver {

@@ -3,7 +3,11 @@ pragma solidity ^0.8.17;
 
 import {Owned} from "solmate/auth/Owned.sol";
 import {ERC1155} from "solmate/tokens/ERC1155.sol";
+import {LibString} from "solmate/utils/LibString.sol";
+import {BokkyPooBahsDateTimeLibrary} from "BokkyPooBahsDateTimeLibrary/BokkyPooBahsDateTimeLibrary.sol";
+
 import {LiquidSplitCloneImpl} from "src/CloneImpl/LiquidSplitCloneImpl.sol";
+import {Renderer} from "src/libs/Renderer.sol";
 
 /// @title 1155LiquidSplit
 /// @author 0xSplits
@@ -29,12 +33,31 @@ contract LS1155CloneImpl is Owned, LiquidSplitCloneImpl, ERC1155 {
     error InvalidLiquidSplit__InvalidAllocationsSum(uint32 allocationsSum);
 
     /// -----------------------------------------------------------------------
+    /// libraries
+    /// -----------------------------------------------------------------------
+
+    using LibString for uint256;
+
+    /// -----------------------------------------------------------------------
     /// storage
     /// -----------------------------------------------------------------------
 
     uint256 internal constant TOKEN_ID = 0;
     uint256 public constant TOTAL_SUPPLY = 1e3;
     uint256 public constant SUPPLY_TO_PERCENTAGE = 1e3; // = PERCENTAGE_SCALE / TOTAL_SUPPLY = 1e6 / 1e3
+
+    /// -----------------------------------------------------------------------
+    /// storage - cwia
+    /// -----------------------------------------------------------------------
+
+    // first item is uint32 distributorFee in LiquidSplitCloneImpl
+    // 4; second item
+    uint256 internal constant MINTED_ON_TIMESTAMP_OFFSET = 4;
+
+    /// @dev equivalent to uint256 public immutable mintedOnTimestamp;
+    function mintedOnTimestamp() public pure returns (uint256) {
+        return _getArgUint256(MINTED_ON_TIMESTAMP_OFFSET);
+    }
 
     /// -----------------------------------------------------------------------
     /// constructor & initializer
@@ -104,10 +127,13 @@ contract LS1155CloneImpl is Owned, LiquidSplitCloneImpl, ERC1155 {
         }
     }
 
-    // TODO: uri
-    /* function uri(uint256 id) public view override returns (string memory) { */
-    function uri(uint256) public pure override returns (string memory) {
-        return "uri";
+    function uri(uint256) public view override returns (string memory) {
+        (uint256 year, uint256 month, uint256 day) = BokkyPooBahsDateTimeLibrary.timestampToDate(mintedOnTimestamp());
+        return Renderer.render({
+            contractAddress: uint256(uint160(address(this))).toString(),
+            chainId: block.chainid.toString(),
+            mintedOnDate: string(abi.encodePacked(year.toString(), "-", month.toString(), "-", day.toString()))
+        });
     }
 
     /// -----------------------------------------------------------------------

@@ -10,6 +10,7 @@ remappings = [
     'solmate/=lib/solmate/src/',
     'solady/=lib/solady/src/',
     'splits-contracts/=lib/splits-contracts/contracts/',
+    'BokkyPooBahsDateTimeLibrary/=lib/BokkyPooBahsDateTimeLibrary/contracts/',
 ]
 libraries = []
 cache = true
