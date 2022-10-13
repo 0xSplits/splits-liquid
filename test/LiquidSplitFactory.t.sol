@@ -36,6 +36,7 @@ contract LiquidSplitFactoryTest is Test {
     address[] public accounts;
     uint32[] public initAllocations;
     uint32 public distributorFee;
+    address public owner;
 
     function setUp() public {
         string memory MAINNET_RPC_URL = vm.envString("MAINNET_RPC_URL");
@@ -51,6 +52,8 @@ contract LiquidSplitFactoryTest is Test {
 
         distributorFee = 0;
 
+        owner = address(this);
+
         lsf = new LiquidSplitFactory(address(splitMain));
     }
 
@@ -64,22 +67,42 @@ contract LiquidSplitFactoryTest is Test {
 
     function testGas_create1_base() public {
         (address[] memory accounts_, uint32[] memory initAllocations_) = setupSplit(1);
-        lsf.createLiquidSplit({accounts: accounts_, initAllocations: initAllocations_, _distributorFee: distributorFee});
+        lsf.createLiquidSplit({
+            accounts: accounts_,
+            initAllocations: initAllocations_,
+            _distributorFee: distributorFee,
+            owner: owner
+        });
     }
 
     function testGas_create10_base() public {
         (address[] memory accounts_, uint32[] memory initAllocations_) = setupSplit(10);
-        lsf.createLiquidSplit({accounts: accounts_, initAllocations: initAllocations_, _distributorFee: distributorFee});
+        lsf.createLiquidSplit({
+            accounts: accounts_,
+            initAllocations: initAllocations_,
+            _distributorFee: distributorFee,
+            owner: owner
+        });
     }
 
     function testGas_create100_base() public {
         (address[] memory accounts_, uint32[] memory initAllocations_) = setupSplit(100);
-        lsf.createLiquidSplit({accounts: accounts_, initAllocations: initAllocations_, _distributorFee: distributorFee});
+        lsf.createLiquidSplit({
+            accounts: accounts_,
+            initAllocations: initAllocations_,
+            _distributorFee: distributorFee,
+            owner: owner
+        });
     }
 
     function testGas_create1000_base() public {
         (address[] memory accounts_, uint32[] memory initAllocations_) = setupSplit(1000);
-        lsf.createLiquidSplit({accounts: accounts_, initAllocations: initAllocations_, _distributorFee: distributorFee});
+        lsf.createLiquidSplit({
+            accounts: accounts_,
+            initAllocations: initAllocations_,
+            _distributorFee: distributorFee,
+            owner: owner
+        });
     }
 
     /// -----------------------------------------------------------------------
@@ -91,7 +114,8 @@ contract LiquidSplitFactoryTest is Test {
         lsf.createLiquidSplitClone({
             accounts: accounts_,
             initAllocations: initAllocations_,
-            _distributorFee: distributorFee
+            _distributorFee: distributorFee,
+            owner: owner
         });
     }
 
@@ -100,7 +124,8 @@ contract LiquidSplitFactoryTest is Test {
         lsf.createLiquidSplitClone({
             accounts: accounts_,
             initAllocations: initAllocations_,
-            _distributorFee: distributorFee
+            _distributorFee: distributorFee,
+            owner: owner
         });
     }
 
@@ -109,7 +134,8 @@ contract LiquidSplitFactoryTest is Test {
         lsf.createLiquidSplitClone({
             accounts: accounts_,
             initAllocations: initAllocations_,
-            _distributorFee: distributorFee
+            _distributorFee: distributorFee,
+            owner: owner
         });
     }
 
@@ -118,7 +144,8 @@ contract LiquidSplitFactoryTest is Test {
         lsf.createLiquidSplitClone({
             accounts: accounts_,
             initAllocations: initAllocations_,
-            _distributorFee: distributorFee
+            _distributorFee: distributorFee,
+            owner: owner
         });
     }
 
@@ -130,7 +157,8 @@ contract LiquidSplitFactoryTest is Test {
         lsf.createLiquidSplit({
             accounts: accounts,
             initAllocations: initAllocations,
-            _distributorFee: MAX_DISTRIBUTOR_FEE
+            _distributorFee: MAX_DISTRIBUTOR_FEE,
+            owner: owner
         });
     }
 
@@ -138,7 +166,8 @@ contract LiquidSplitFactoryTest is Test {
         lsf.createLiquidSplitClone({
             accounts: accounts,
             initAllocations: initAllocations,
-            _distributorFee: MAX_DISTRIBUTOR_FEE
+            _distributorFee: MAX_DISTRIBUTOR_FEE,
+            owner: owner
         });
     }
 
@@ -147,7 +176,8 @@ contract LiquidSplitFactoryTest is Test {
         lsf.createLiquidSplit({
             accounts: accounts,
             initAllocations: initAllocations,
-            _distributorFee: MAX_DISTRIBUTOR_FEE + 1
+            _distributorFee: MAX_DISTRIBUTOR_FEE + 1,
+            owner: owner
         });
     }
 
@@ -158,7 +188,8 @@ contract LiquidSplitFactoryTest is Test {
         lsf.createLiquidSplitClone({
             accounts: accounts,
             initAllocations: initAllocations,
-            _distributorFee: MAX_DISTRIBUTOR_FEE + 1
+            _distributorFee: MAX_DISTRIBUTOR_FEE + 1,
+            owner: owner
         });
     }
 

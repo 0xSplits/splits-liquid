@@ -64,10 +64,12 @@ contract LiquidSplitFactory {
     /// functions - public & external
     /// -----------------------------------------------------------------------
 
-    function createLiquidSplit(address[] calldata accounts, uint32[] calldata initAllocations, uint32 _distributorFee)
-        external
-        returns (LS1155 ls)
-    {
+    function createLiquidSplit(
+        address[] calldata accounts,
+        uint32[] calldata initAllocations,
+        uint32 _distributorFee,
+        address owner
+    ) external returns (LS1155 ls) {
         /// checks
 
         // params are validated inside LS1155 constructor
@@ -79,7 +81,8 @@ contract LiquidSplitFactory {
             _splitMain: splitMain,
             accounts: accounts,
             initAllocations: initAllocations,
-            _distributorFee: _distributorFee
+            _distributorFee: _distributorFee,
+            _owner: owner
             });
         emit CreateLS1155(ls);
     }
@@ -87,7 +90,8 @@ contract LiquidSplitFactory {
     function createLiquidSplitClone(
         address[] calldata accounts,
         uint32[] calldata initAllocations,
-        uint32 _distributorFee
+        uint32 _distributorFee,
+        address owner
     ) external returns (LS1155CloneImpl ls) {
         /// checks
 
@@ -103,6 +107,6 @@ contract LiquidSplitFactory {
 
         ls = LS1155CloneImpl(ls1155CloneImpl.clone(abi.encodePacked(_distributorFee)));
         emit CreateLS1155Clone(ls);
-        ls.initializer({accounts: accounts, initAllocations: initAllocations});
+        ls.initializer({accounts: accounts, initAllocations: initAllocations, _owner: owner});
     }
 }

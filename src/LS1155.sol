@@ -1,15 +1,16 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.17;
 
-import {LiquidSplit} from "src/LiquidSplit.sol";
+import {Owned} from "solmate/auth/Owned.sol";
 import {ERC1155} from "solmate/tokens/ERC1155.sol";
+import {LiquidSplit} from "src/LiquidSplit.sol";
 
 /// @title 1155LiquidSplit
 /// @author 0xSplits
 /// @notice A minimal liquid splits implementation.
 /// Ownership in a split is represented by 1155s (each = 0.1% of split)
 /// @dev This contract uses token = address(0) to refer to ETH.
-contract LS1155 is ERC1155, LiquidSplit {
+contract LS1155 is Owned, LiquidSplit, ERC1155 {
     /// -----------------------------------------------------------------------
     /// errors
     /// -----------------------------------------------------------------------
@@ -35,9 +36,13 @@ contract LS1155 is ERC1155, LiquidSplit {
     /// constructor
     /// -----------------------------------------------------------------------
 
-    constructor(address _splitMain, address[] memory accounts, uint32[] memory initAllocations, uint32 _distributorFee)
-        LiquidSplit(_splitMain, _distributorFee)
-    {
+    constructor(
+        address _splitMain,
+        address[] memory accounts,
+        uint32[] memory initAllocations,
+        uint32 _distributorFee,
+        address _owner
+    ) Owned(_owner) LiquidSplit(_splitMain, _distributorFee) {
         /// checks
 
         if (accounts.length != initAllocations.length) {

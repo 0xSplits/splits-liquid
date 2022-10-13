@@ -18,6 +18,7 @@ contract LS1155CloneImplTest is Test {
     using SafeTransferLib for address;
     using LibSort for address[];
 
+    event OwnershipTransferred(address indexed user, address indexed newOwner);
     event ReceiveETH(uint256 amount);
 
     uint256 constant BLOCK_NUMBER = 15619912;
@@ -36,6 +37,7 @@ contract LS1155CloneImplTest is Test {
     address[] public accounts;
     uint32[] public initAllocations;
     uint32 public distributorFee;
+    address public owner;
 
     function setUp() public {
         string memory MAINNET_RPC_URL = vm.envString("MAINNET_RPC_URL");
@@ -54,11 +56,14 @@ contract LS1155CloneImplTest is Test {
 
         distributorFee = 0;
 
+        owner = address(this);
+
         lsf = new LiquidSplitFactory(address(splitMain));
         ls = lsf.createLiquidSplitClone({
             accounts: accounts,
             initAllocations: initAllocations,
-            _distributorFee: distributorFee
+            _distributorFee: distributorFee,
+            owner: owner
         });
     }
 
@@ -66,9 +71,60 @@ contract LS1155CloneImplTest is Test {
     /// correctness tests - creation
     /// -----------------------------------------------------------------------
 
+    function testCan_setOwnerOnCreation() public {
+        assertEq(address(this), ls.owner());
+    }
+
+    function testCan_setNoOwnerOnCreation() public {
+        owner = address(0);
+
+        ls = lsf.createLiquidSplitClone({
+            accounts: accounts,
+            initAllocations: initAllocations,
+            _distributorFee: distributorFee,
+            owner: owner
+        });
+
+        assertEq(address(0), ls.owner());
+    }
+
+    function testCan_emitOnCreation() public {
+        vm.expectEmit(true, true, true, true);
+        emit OwnershipTransferred(address(0), owner);
+
+        ls = lsf.createLiquidSplitClone({
+            accounts: accounts,
+            initAllocations: initAllocations,
+            _distributorFee: distributorFee,
+            owner: owner
+        });
+    }
+
+    function testCan_transferOwnership() public {
+        assertEq(address(this), ls.owner());
+
+        vm.expectEmit(true, true, true, true);
+        emit OwnershipTransferred(address(this), address(0));
+
+        ls.transferOwnership(address(0));
+
+        assertEq(address(0), ls.owner());
+    }
+
+    function testCannot_transferOwnershipByNonOwner() public {
+        assertEq(address(this), ls.owner());
+
+
+        vm.prank(address(0xDEADBEEF));
+        vm.expectRevert("UNAUTHORIZED");
+        ls.transferOwnership(address(0));
+
+        assertEq(address(this), ls.owner());
+    }
+
     function testCannot_beInitializedByNonFactoryAddress() public {
         vm.expectRevert(Unauthorized.selector);
-        ls.initializer({accounts: accounts, initAllocations: initAllocations});
+        ls.initializer({accounts: accounts, initAllocations: initAllocations, _owner: owner});
     }
 
     function testCan_allocateToSafe721Recipient() public {
@@ -78,7 +134,8 @@ contract LS1155CloneImplTest is Test {
         lsf.createLiquidSplitClone({
             accounts: accounts,
             initAllocations: initAllocations,
-            _distributorFee: distributorFee
+            _distributorFee: distributorFee,
+            owner: owner
         });
     }
 
@@ -90,7 +147,8 @@ contract LS1155CloneImplTest is Test {
         lsf.createLiquidSplitClone({
             accounts: accounts,
             initAllocations: initAllocations,
-            _distributorFee: distributorFee
+            _distributorFee: distributorFee,
+            owner: owner
         });
 
         accounts[0] = account;
@@ -100,7 +158,8 @@ contract LS1155CloneImplTest is Test {
         lsf.createLiquidSplitClone({
             accounts: accounts,
             initAllocations: initAllocations,
-            _distributorFee: distributorFee
+            _distributorFee: distributorFee,
+            owner: owner
         });
     }
 
@@ -112,7 +171,8 @@ contract LS1155CloneImplTest is Test {
         lsf.createLiquidSplitClone({
             accounts: accounts,
             initAllocations: initAllocations,
-            _distributorFee: distributorFee
+            _distributorFee: distributorFee,
+            owner: owner
         });
 
         accounts[0] = account;
@@ -122,7 +182,8 @@ contract LS1155CloneImplTest is Test {
         lsf.createLiquidSplitClone({
             accounts: accounts,
             initAllocations: initAllocations,
-            _distributorFee: distributorFee
+            _distributorFee: distributorFee,
+            owner: owner
         });
     }
 
@@ -134,7 +195,8 @@ contract LS1155CloneImplTest is Test {
         lsf.createLiquidSplitClone({
             accounts: accounts,
             initAllocations: initAllocations,
-            _distributorFee: distributorFee
+            _distributorFee: distributorFee,
+            owner: owner
         });
 
         accounts[0] = account;
@@ -144,7 +206,8 @@ contract LS1155CloneImplTest is Test {
         lsf.createLiquidSplitClone({
             accounts: accounts,
             initAllocations: initAllocations,
-            _distributorFee: distributorFee
+            _distributorFee: distributorFee,
+            owner: owner
         });
     }
 
@@ -156,7 +219,8 @@ contract LS1155CloneImplTest is Test {
         lsf.createLiquidSplitClone({
             accounts: accounts,
             initAllocations: initAllocations,
-            _distributorFee: distributorFee
+            _distributorFee: distributorFee,
+            owner: owner
         });
 
         accounts[0] = account;
@@ -166,7 +230,8 @@ contract LS1155CloneImplTest is Test {
         lsf.createLiquidSplitClone({
             accounts: accounts,
             initAllocations: initAllocations,
-            _distributorFee: distributorFee
+            _distributorFee: distributorFee,
+            owner: owner
         });
     }
 
@@ -281,7 +346,8 @@ contract LS1155CloneImplTest is Test {
         ls = lsf.createLiquidSplitClone({
             accounts: _accounts,
             initAllocations: _initAllocations,
-            _distributorFee: distributorFee
+            _distributorFee: distributorFee,
+            owner: owner
         });
 
         address(ls).safeTransferETH(TOTAL_SUPPLY * 1 ether);
@@ -307,7 +373,8 @@ contract LS1155CloneImplTest is Test {
         ls = lsf.createLiquidSplitClone({
             accounts: accounts,
             initAllocations: initAllocations,
-            _distributorFee: distributorFee
+            _distributorFee: distributorFee,
+            owner: owner
         });
 
         address[] memory _accounts = accounts;

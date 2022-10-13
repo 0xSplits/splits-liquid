@@ -16,6 +16,7 @@ contract LS1155Test is Test {
     using LibSort for address[];
 
     event CreateLiquidSplit();
+    event OwnershipTransferred(address indexed user, address indexed newOwner);
     event ReceiveETH(uint256 amount);
 
     uint256 constant BLOCK_NUMBER = 15619912;
@@ -33,6 +34,7 @@ contract LS1155Test is Test {
     address[] public accounts;
     uint32[] public initAllocations;
     uint32 public distributorFee;
+    address public owner;
 
     function setUp() public {
         string memory MAINNET_RPC_URL = vm.envString("MAINNET_RPC_URL");
@@ -51,26 +53,68 @@ contract LS1155Test is Test {
 
         distributorFee = 0;
 
+        owner = address(this);
+
         ls =
-        new LS1155{salt: keccak256(bytes("0xSplits.liquid.test"))}({ _splitMain: address(splitMain), accounts: accounts, initAllocations: initAllocations, _distributorFee: distributorFee });
+        new LS1155{salt: keccak256(bytes("0xSplits.liquid.test"))}({ _splitMain: address(splitMain), accounts: accounts, initAllocations: initAllocations, _distributorFee: distributorFee, _owner: owner });
     }
 
     /// -----------------------------------------------------------------------
     /// correctness tests - creation
     /// -----------------------------------------------------------------------
 
+    function testCan_setOwnerOnCreation() public {
+        assertEq(address(this), ls.owner());
+    }
+
+    function testCan_setNoOwnerOnCreation() public {
+        owner = address(0);
+
+        ls =
+        new LS1155{salt: keccak256(bytes("0xSplits.liquid.test"))}({ _splitMain: address(splitMain), accounts: accounts, initAllocations: initAllocations, _distributorFee: distributorFee, _owner: owner });
+
+        assertEq(address(0), ls.owner());
+    }
+
     function testCan_emitOnCreation() public {
         vm.expectEmit(true, true, true, true);
         emit CreateLiquidSplit();
 
-        new LS1155({ _splitMain: address(splitMain), accounts: accounts, initAllocations: initAllocations, _distributorFee: distributorFee });
+        new LS1155({ _splitMain: address(splitMain), accounts: accounts, initAllocations: initAllocations, _distributorFee: distributorFee, _owner: owner });
+
+        vm.expectEmit(true, true, true, true);
+        emit OwnershipTransferred(address(0), address(this));
+
+        new LS1155({ _splitMain: address(splitMain), accounts: accounts, initAllocations: initAllocations, _distributorFee: distributorFee, _owner: address(this) });
+    }
+
+    function testCan_transferOwnership() public {
+        assertEq(address(this), ls.owner());
+
+        vm.expectEmit(true, true, true, true);
+        emit OwnershipTransferred(address(this), address(0));
+
+        ls.transferOwnership(address(0));
+
+        assertEq(address(0), ls.owner());
+    }
+
+    function testCannot_transferOwnershipByNonOwner() public {
+        assertEq(address(this), ls.owner());
+
+
+        vm.prank(address(0xDEADBEEF));
+        vm.expectRevert("UNAUTHORIZED");
+        ls.transferOwnership(address(0));
+
+        assertEq(address(this), ls.owner());
     }
 
     function testCan_allocateToSafe721Recipient() public {
         accounts[0] = address(new ERC1155Recipient());
         accounts[1] = makeAddr("0xSplits.bob");
 
-        new LS1155({ _splitMain: address(splitMain), accounts: accounts, initAllocations: initAllocations, _distributorFee: distributorFee });
+        new LS1155({ _splitMain: address(splitMain), accounts: accounts, initAllocations: initAllocations, _distributorFee: distributorFee, _owner: owner });
     }
 
     function testCannot_allocateToZeroAddress() public {
@@ -78,13 +122,13 @@ contract LS1155Test is Test {
         accounts[0] = address(0);
 
         vm.expectRevert("UNSAFE_RECIPIENT");
-        new LS1155({ _splitMain: address(splitMain), accounts: accounts, initAllocations: initAllocations, _distributorFee: distributorFee });
+        new LS1155({ _splitMain: address(splitMain), accounts: accounts, initAllocations: initAllocations, _distributorFee: distributorFee, _owner: owner });
 
         accounts[0] = account;
         accounts[1] = address(0);
 
         vm.expectRevert("UNSAFE_RECIPIENT");
-        new LS1155({ _splitMain: address(splitMain), accounts: accounts, initAllocations: initAllocations, _distributorFee: distributorFee });
+        new LS1155({ _splitMain: address(splitMain), accounts: accounts, initAllocations: initAllocations, _distributorFee: distributorFee, _owner: owner });
     }
 
     function testCannot_allocateToNon721Recipient() public {
@@ -92,13 +136,13 @@ contract LS1155Test is Test {
         accounts[0] = address(new NonERC1155Recipient());
 
         vm.expectRevert();
-        new LS1155({ _splitMain: address(splitMain), accounts: accounts, initAllocations: initAllocations, _distributorFee: distributorFee });
+        new LS1155({ _splitMain: address(splitMain), accounts: accounts, initAllocations: initAllocations, _distributorFee: distributorFee, _owner: owner });
 
         accounts[0] = account;
         accounts[1] = address(new NonERC1155Recipient());
 
         vm.expectRevert();
-        new LS1155({ _splitMain: address(splitMain), accounts: accounts, initAllocations: initAllocations, _distributorFee: distributorFee });
+        new LS1155({ _splitMain: address(splitMain), accounts: accounts, initAllocations: initAllocations, _distributorFee: distributorFee, _owner: owner });
     }
 
     function testCannot_allocateToUnsafe721Recipient() public {
@@ -106,13 +150,13 @@ contract LS1155Test is Test {
         accounts[0] = address(new WrongReturnDataERC1155Recipient());
 
         vm.expectRevert("UNSAFE_RECIPIENT");
-        new LS1155({ _splitMain: address(splitMain), accounts: accounts, initAllocations: initAllocations, _distributorFee: distributorFee });
+        new LS1155({ _splitMain: address(splitMain), accounts: accounts, initAllocations: initAllocations, _distributorFee: distributorFee, _owner: owner });
 
         accounts[0] = account;
         accounts[1] = address(new WrongReturnDataERC1155Recipient());
 
         vm.expectRevert("UNSAFE_RECIPIENT");
-        new LS1155({ _splitMain: address(splitMain), accounts: accounts, initAllocations: initAllocations, _distributorFee: distributorFee });
+        new LS1155({ _splitMain: address(splitMain), accounts: accounts, initAllocations: initAllocations, _distributorFee: distributorFee, _owner: owner });
     }
 
     function testCannot_allocateToReverting721Recipient() public {
@@ -120,13 +164,13 @@ contract LS1155Test is Test {
         accounts[0] = address(new RevertingERC1155Recipient());
 
         vm.expectRevert(abi.encodeWithSelector(ERC1155TokenReceiver.onERC1155Received.selector));
-        new LS1155({ _splitMain: address(splitMain), accounts: accounts, initAllocations: initAllocations, _distributorFee: distributorFee });
+        new LS1155({ _splitMain: address(splitMain), accounts: accounts, initAllocations: initAllocations, _distributorFee: distributorFee, _owner: owner });
 
         accounts[0] = account;
         accounts[1] = address(new RevertingERC1155Recipient());
 
         vm.expectRevert(abi.encodeWithSelector(ERC1155TokenReceiver.onERC1155Received.selector));
-        new LS1155({ _splitMain: address(splitMain), accounts: accounts, initAllocations: initAllocations, _distributorFee: distributorFee });
+        new LS1155({ _splitMain: address(splitMain), accounts: accounts, initAllocations: initAllocations, _distributorFee: distributorFee, _owner: owner });
     }
 
     /// -----------------------------------------------------------------------
@@ -238,7 +282,7 @@ contract LS1155Test is Test {
         uint32[] memory _initAllocations = initAllocations;
 
         ls =
-        new LS1155{salt: keccak256(bytes("0xSplits.liquid.test"))}({ _splitMain: address(splitMain), accounts: _accounts, initAllocations: _initAllocations, _distributorFee: distributorFee });
+        new LS1155{salt: keccak256(bytes("0xSplits.liquid.test"))}({ _splitMain: address(splitMain), accounts: _accounts, initAllocations: _initAllocations, _distributorFee: distributorFee, _owner: owner });
 
         address(ls).safeTransferETH(TOTAL_SUPPLY * 1 ether);
         uint256 gasStart = gasleft();
@@ -261,7 +305,7 @@ contract LS1155Test is Test {
         distributorFee = uint32(PERCENTAGE_SCALE / 10); // = 10%
 
         ls =
-        new LS1155{salt: keccak256(bytes("0xSplits.liquid.test"))}({ _splitMain: address(splitMain), accounts: accounts, initAllocations: initAllocations, _distributorFee: distributorFee });
+        new LS1155{salt: keccak256(bytes("0xSplits.liquid.test"))}({ _splitMain: address(splitMain), accounts: accounts, initAllocations: initAllocations, _distributorFee: distributorFee, _owner: owner });
 
         address[] memory _accounts = accounts;
         _accounts.sort();
