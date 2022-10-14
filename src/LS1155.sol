@@ -4,6 +4,7 @@ pragma solidity ^0.8.17;
 import {Owned} from "solmate/auth/Owned.sol";
 import {ERC1155} from "solmate/tokens/ERC1155.sol";
 import {LibString} from "solmate/utils/LibString.sol";
+import {Base64} from "solady/utils/Base64.sol";
 import {BokkyPooBahsDateTimeLibrary} from "BokkyPooBahsDateTimeLibrary/BokkyPooBahsDateTimeLibrary.sol";
 
 import {LiquidSplit} from "src/LiquidSplit.sol";
@@ -107,12 +108,32 @@ contract LS1155 is Owned, LiquidSplit, ERC1155 {
     }
 
     function uri(uint256) public view override returns (string memory) {
+        string memory contractAddr = uint256(uint160(address(this))).toString();
         (uint256 year, uint256 month, uint256 day) = BokkyPooBahsDateTimeLibrary.timestampToDate(mintedOnTimestamp);
-        return Renderer.render({
-            contractAddress: uint256(uint160(address(this))).toString(),
-            chainId: block.chainid.toString(),
-            mintedOnDate: string(abi.encodePacked(year.toString(), "-", month.toString(), "-", day.toString()))
-        });
+        return string.concat(
+            "data:application/json;base64,",
+            Base64.encode(
+                bytes(
+                    string.concat(
+                        '{"name": "0sSplits Liquid Split (',
+                        contractAddr,
+                        ')", "image": "data:image/svg+xml;base64,',
+                        Base64.encode(
+                            bytes(
+                                Renderer.render({
+                                    contractAddress: contractAddr,
+                                    chainId: block.chainid.toString(),
+                                    mintedOnDate: string(
+                                        abi.encodePacked(year.toString(), "-", month.toString(), "-", day.toString())
+                                        )
+                                })
+                            )
+                        ),
+                        "}"
+                    )
+                )
+            )
+        );
     }
 
     /// -----------------------------------------------------------------------
