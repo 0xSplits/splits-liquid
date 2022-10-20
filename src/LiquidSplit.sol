@@ -22,7 +22,7 @@ abstract contract LiquidSplit {
     /// -----------------------------------------------------------------------
 
     /// Emitted after each liquid split creation for indexing purposes
-    event CreateLiquidSplit();
+    event CreateLiquidSplit(address indexed payoutSplit);
 
     /// Emitted after each successful ETH transfer to proxy
     /// @param amount Amount of ETH received
@@ -73,7 +73,7 @@ abstract contract LiquidSplit {
             })
         );
 
-        emit CreateLiquidSplit();
+        emit CreateLiquidSplit(payoutSplit);
     }
 
     /// -----------------------------------------------------------------------
