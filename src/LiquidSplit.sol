@@ -89,6 +89,9 @@ abstract contract LiquidSplit {
         emit ReceiveETH(msg.value);
     }
 
+    // NOTE: if `sum(percentAllocations) != 1e6`, the split will fail to update and funds will be stuck!
+    // be _very_ careful with edge cases in managing supply (including burns, rounding on odd numbers, etc)
+
     /// distributes ETH & ERC20s to NFT holders
     /// @param token ETH (0x0) or ERC20 token to distribute
     /// @param accounts Ordered, unique list of NFT holders
