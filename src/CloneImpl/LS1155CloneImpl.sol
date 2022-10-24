@@ -129,15 +129,21 @@ contract LS1155CloneImpl is Owned, LiquidSplitCloneImpl, ERC1155 {
         }
     }
 
+    function name() external view returns (string memory) {
+        return string.concat("Liquid Split ", utils.shortAddressToString(address(this)));
+    }
+
     function uri(uint256) public view override returns (string memory) {
         return string.concat(
             "data:application/json;base64,",
             Base64.encode(
                 bytes(
                     string.concat(
-                        '{"name": "0xSplits Liquid Split (',
-                        utils.addressToString(address(this)),
-                        ')", "image": "data:image/svg+xml;base64,',
+                        '{"name": "Liquid Split ',
+                        utils.shortAddressToString(address(this)),
+                        '", "description": ',
+                        '"Each token represents 0.1% of this Liquid Split.", ',
+                        '"image": "data:image/svg+xml;base64,',
                         Base64.encode(bytes(Renderer.render(address(this)))),
                         '"}'
                     )

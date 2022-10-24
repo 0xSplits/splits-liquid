@@ -38,7 +38,7 @@ library Renderer {
             utils.uint2str(size),
             '" style="background:#000000;font-family:sans-serif;fill:#fafafa;font-size:32">',
             logo,
-            '</svg>'
+            "</svg>"
         );
     }
 
