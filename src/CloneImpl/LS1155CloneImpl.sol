@@ -135,7 +135,7 @@ contract LS1155CloneImpl is Owned, LiquidSplitCloneImpl, ERC1155 {
                 bytes(
                     string.concat(
                         '{"name": "0sSplits Liquid Split (',
-                                                          string(abi.encodePacked(address(this))),
+                        string(abi.encodePacked(address(this))),
                         ')", "image": "data:image/svg+xml;base64,',
                         Base64.encode(bytes(Renderer.render(address(this)))),
                         "}"
