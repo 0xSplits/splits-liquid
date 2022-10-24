@@ -9,6 +9,7 @@ import {BokkyPooBahsDateTimeLibrary} from "BokkyPooBahsDateTimeLibrary/BokkyPooB
 
 import {LiquidSplitCloneImpl} from "src/CloneImpl/LiquidSplitCloneImpl.sol";
 import {Renderer} from "src/libs/Renderer.sol";
+import {utils} from "src/libs/Utils.sol";
 
 /// @title 1155LiquidSplit
 /// @author 0xSplits
@@ -134,8 +135,8 @@ contract LS1155CloneImpl is Owned, LiquidSplitCloneImpl, ERC1155 {
             Base64.encode(
                 bytes(
                     string.concat(
-                        '{"name": "0sSplits Liquid Split (',
-                        string(address(this)),
+                        '{"name": "0xSplits Liquid Split (',
+                        utils.addressToString(address(this)),
                         ')", "image": "data:image/svg+xml;base64,',
                         Base64.encode(bytes(Renderer.render(address(this)))),
                         '"}'
