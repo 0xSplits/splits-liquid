@@ -75,6 +75,10 @@ library svg {
         );
     }
 
+    function animate(string memory _props) internal pure returns (string memory) {
+        return el("animate", _props);
+    }
+
     function animateTransform(string memory _props) internal pure returns (string memory) {
         return el("animateTransform", _props);
     }

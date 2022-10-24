@@ -108,27 +108,15 @@ contract LS1155 is Owned, LiquidSplit, ERC1155 {
     }
 
     function uri(uint256) public view override returns (string memory) {
-        string memory contractAddr = uint256(uint160(address(this))).toString();
-        (uint256 year, uint256 month, uint256 day) = BokkyPooBahsDateTimeLibrary.timestampToDate(mintedOnTimestamp);
         return string.concat(
             "data:application/json;base64,",
             Base64.encode(
                 bytes(
                     string.concat(
                         '{"name": "0sSplits Liquid Split (',
-                        contractAddr,
+                                                          string(abi.encodePacked(address(this))),
                         ')", "image": "data:image/svg+xml;base64,',
-                        Base64.encode(
-                            bytes(
-                                Renderer.render({
-                                    contractAddress: contractAddr,
-                                    chainId: block.chainid.toString(),
-                                    mintedOnDate: string(
-                                        abi.encodePacked(year.toString(), "-", month.toString(), "-", day.toString())
-                                        )
-                                })
-                            )
-                        ),
+                        Base64.encode(bytes(Renderer.render(address(this)))),
                         "}"
                     )
                 )

@@ -93,11 +93,14 @@ library utils {
         return string(bstr);
     }
 
-    // returns the width in pixels of a string
-    function utfStringWidth(string memory _str, uint256 _fontSize) internal pure returns (uint256 _stringWidth) {
-        uint256 _stringLength = utfStringLength(_str);
-        uint256 _utfWidth = _fontSize / 2;
-        uint256 _width = _utfWidth * _stringLength;
-        return uint256(_width);
+    // generate hsla color from seed
+    function getHslColor(uint256 seed) internal pure returns (string memory _hsla) {
+        uint256 hue = seed % 360;
+        _hsla = string.concat("hsla(", utils.uint2str(hue), ", 88%, 56%, 1)");
+    }
+
+    function bound(uint256 value, uint256 max, uint256 min) internal pure returns (uint256 _value) {
+        /* require(max >= min, "INVALID_BOUND"); */
+        _value = value % (max - min) + min;
     }
 }
