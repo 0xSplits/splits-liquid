@@ -104,7 +104,7 @@ library utils {
         _value = value % (max - min) + min;
     }
 
-    function addressToString(address _address) public pure returns (string memory) {
+    function addressToString(address _address) internal pure returns (string memory) {
         bytes32 _bytes = bytes32(uint256(uint160(_address)));
         bytes memory HEX = "0123456789abcdef";
         bytes memory _string = new bytes(42);
