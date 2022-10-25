@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.17;
 
-import {LS1155} from "./LS1155.sol";
 import {LS1155CloneImpl} from "./CloneImpl/LS1155CloneImpl.sol";
 import {LibClone} from "solady/utils/LibClone.sol";
 
@@ -27,8 +26,6 @@ contract LiquidSplitFactory {
     /// events
     /// -----------------------------------------------------------------------
 
-    event CreateLS1155(LS1155 indexed ls);
-
     event CreateLS1155Clone(LS1155CloneImpl indexed ls);
 
     /// -----------------------------------------------------------------------
@@ -37,7 +34,6 @@ contract LiquidSplitFactory {
 
     uint256 public constant MAX_DISTRIBUTOR_FEE = 1e5; // = 10% * PERCENTAGE_SCALE
 
-    address public immutable splitMain;
     address public immutable ls1155CloneImpl;
 
     /// -----------------------------------------------------------------------
@@ -48,8 +44,6 @@ contract LiquidSplitFactory {
         /// checks
 
         /// effects
-
-        splitMain = _splitMain;
 
         /// interactions
 
@@ -63,29 +57,6 @@ contract LiquidSplitFactory {
     /// -----------------------------------------------------------------------
     /// functions - public & external
     /// -----------------------------------------------------------------------
-
-    function createLiquidSplit(
-        address[] calldata accounts,
-        uint32[] calldata initAllocations,
-        uint32 _distributorFee,
-        address owner
-    ) external returns (LS1155 ls) {
-        /// checks
-
-        // params are validated inside LS1155 constructor
-
-        /// effects
-
-        /// interactions
-        ls = new LS1155({
-            _splitMain: splitMain,
-            accounts: accounts,
-            initAllocations: initAllocations,
-            _distributorFee: _distributorFee,
-            _owner: owner
-            });
-        emit CreateLS1155(ls);
-    }
 
     function createLiquidSplitClone(
         address[] calldata accounts,

@@ -145,7 +145,7 @@ contract LS1155CloneImpl is Owned, LiquidSplitCloneImpl, ERC1155 {
                         '"external_url": ',
                         '"https://app.0xsplits.xyz/accounts/',
                         utils.addressToString(address(this)),
-                        '/?chainId=',
+                        "/?chainId=",
                         utils.uint2str(block.chainid),
                         '", ',
                         '"image": "data:image/svg+xml;base64,',

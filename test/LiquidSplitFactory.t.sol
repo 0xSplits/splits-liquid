@@ -61,55 +61,7 @@ contract LiquidSplitFactoryTest is Test {
     /// gas tests
     /// -----------------------------------------------------------------------
 
-    /// -----------------------------------------------------------------------
-    /// gas tests - LS1155
-    /// -----------------------------------------------------------------------
-
-    function testGas_create1_base() public {
-        (address[] memory accounts_, uint32[] memory initAllocations_) = setupSplit(1);
-        lsf.createLiquidSplit({
-            accounts: accounts_,
-            initAllocations: initAllocations_,
-            _distributorFee: distributorFee,
-            owner: owner
-        });
-    }
-
-    function testGas_create10_base() public {
-        (address[] memory accounts_, uint32[] memory initAllocations_) = setupSplit(10);
-        lsf.createLiquidSplit({
-            accounts: accounts_,
-            initAllocations: initAllocations_,
-            _distributorFee: distributorFee,
-            owner: owner
-        });
-    }
-
-    function testGas_create100_base() public {
-        (address[] memory accounts_, uint32[] memory initAllocations_) = setupSplit(100);
-        lsf.createLiquidSplit({
-            accounts: accounts_,
-            initAllocations: initAllocations_,
-            _distributorFee: distributorFee,
-            owner: owner
-        });
-    }
-
-    function testGas_create1000_base() public {
-        (address[] memory accounts_, uint32[] memory initAllocations_) = setupSplit(1000);
-        lsf.createLiquidSplit({
-            accounts: accounts_,
-            initAllocations: initAllocations_,
-            _distributorFee: distributorFee,
-            owner: owner
-        });
-    }
-
-    /// -----------------------------------------------------------------------
-    /// gas tests - LS1155Clone
-    /// -----------------------------------------------------------------------
-
-    function testGas_create1_clone() public {
+    function testGas_create1() public {
         (address[] memory accounts_, uint32[] memory initAllocations_) = setupSplit(1);
         lsf.createLiquidSplitClone({
             accounts: accounts_,
@@ -119,7 +71,7 @@ contract LiquidSplitFactoryTest is Test {
         });
     }
 
-    function testGas_create10_clone() public {
+    function testGas_create10() public {
         (address[] memory accounts_, uint32[] memory initAllocations_) = setupSplit(10);
         lsf.createLiquidSplitClone({
             accounts: accounts_,
@@ -129,7 +81,7 @@ contract LiquidSplitFactoryTest is Test {
         });
     }
 
-    function testGas_create100_clone() public {
+    function testGas_create100() public {
         (address[] memory accounts_, uint32[] memory initAllocations_) = setupSplit(100);
         lsf.createLiquidSplitClone({
             accounts: accounts_,
@@ -139,7 +91,7 @@ contract LiquidSplitFactoryTest is Test {
         });
     }
 
-    function testGas_create1000_clone() public {
+    function testGas_create1000() public {
         (address[] memory accounts_, uint32[] memory initAllocations_) = setupSplit(1000);
         lsf.createLiquidSplitClone({
             accounts: accounts_,
@@ -153,16 +105,7 @@ contract LiquidSplitFactoryTest is Test {
     /// correctness tests - basic
     /// -----------------------------------------------------------------------
 
-    function testCan_createLS1155_base() public {
-        lsf.createLiquidSplit({
-            accounts: accounts,
-            initAllocations: initAllocations,
-            _distributorFee: MAX_DISTRIBUTOR_FEE,
-            owner: owner
-        });
-    }
-
-    function testCan_createLS1155_clone() public {
+    function testCan_createLS1155() public {
         lsf.createLiquidSplitClone({
             accounts: accounts,
             initAllocations: initAllocations,
@@ -171,17 +114,7 @@ contract LiquidSplitFactoryTest is Test {
         });
     }
 
-    function testCannot_createLS1155WithTooLargeDistributorFee_base() public {
-        vm.expectRevert(abi.encodeWithSelector(InvalidSplit__InvalidDistributorFee.selector, MAX_DISTRIBUTOR_FEE + 1));
-        lsf.createLiquidSplit({
-            accounts: accounts,
-            initAllocations: initAllocations,
-            _distributorFee: MAX_DISTRIBUTOR_FEE + 1,
-            owner: owner
-        });
-    }
-
-    function testCannot_createLS1155WithTooLargeDistributorFee_clone() public {
+    function testCannot_createLS1155WithTooLargeDistributorFee() public {
         vm.expectRevert(
             abi.encodeWithSelector(InvalidLiquidSplit__InvalidDistributorFee.selector, MAX_DISTRIBUTOR_FEE + 1)
         );
