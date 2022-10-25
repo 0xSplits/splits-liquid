@@ -142,6 +142,12 @@ contract LS1155CloneImpl is Owned, LiquidSplitCloneImpl, ERC1155 {
                         utils.shortAddressToString(address(this)),
                         '", "description": ',
                         '"Each token represents 0.1% of this Liquid Split.", ',
+                        '"external_url": ',
+                        '"https://app.0xsplits.xyz/accounts/',
+                        utils.addressToString(address(this)),
+                        '/?chainId=',
+                        utils.uint2str(block.chainid),
+                        '", ',
                         '"image": "data:image/svg+xml;base64,',
                         Base64.encode(bytes(Renderer.render(address(this)))),
                         '"}'
