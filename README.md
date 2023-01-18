@@ -11,4 +11,4 @@ This design gives ~control of the split to the recipients themselves, allowing t
 ## Notes
 
 1. `LiquidSplitFactory.sol` powers liquid splits offered at app.0xsplits.xyz
-2. `LiquidSplit.sol` can be inherited in any NFT project & `LS1155.sol` is an example of how to integrate it
+2. To add to your own project, fork our [Liquid Splits template](https://github.com/0xSplits/splits-liquid-template) & inherit `LiquidSplit.sol`
