@@ -66,3 +66,5 @@ endpoints = 'all'
 [profile.etherscan]
 gnosis = { key = "${GNO_ETHERSCAN_API_KEY}", url = "https://api.gnosisscan.io/api" }
 chiado = { key = "${GNO_ETHERSCAN_API_KEY}", url = "https://blockscout.com/gnosis/chiado/api" }
+fantom = { key = "${FTM_ETHERSCAN_API_KEY}" }
+fantomTestnet = { key = "${FTM_ETHERSCAN_API_KEY}" }
